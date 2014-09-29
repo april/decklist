@@ -1,13 +1,11 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-		"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 	<title>Magic the Gathering Decklist Generator</title>
-	<meta http-equiv="content-type" content="text/html; charset=us-ascii" />
+	<meta charset="utf-8">
 
-	<link rel="stylesheet" type="text/css" href="css/decklist.css" />
-	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css" />
+	<link rel="stylesheet" type="text/css" href="css/decklist.css">
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
 
 	<!-- jQuery -->
 	<script type="text/javascript" src="js/jquery/jquery-1.11.1.min.js"></script>
@@ -28,67 +26,63 @@
 
 <body>
 	<div class="wrapper">
-		<!-- <div class="header">
-			header
-		</div> -->
-
 		<div class="wrapleft">
 			<div class="left">
 				<form>
 					<h2>Personal Information</h2>
-					<label>
+					<label for="firstname">
 						<span>First Name:</span> 
-						<input type="text" id="firstname" />
+						<input type="text" id="firstname">
 					</label>
-					<label>
+					<label for="lastname">
 						<span>Last Name:</span> 
-						<input type="text" id="lastname" />
+						<input type="text" id="lastname">
 					</label>
-					<label>
+					<label for="dcinumber">
 						<span>DCI #:</span> 
-						<input type="text" id="dcinumber" />
+						<input type="text" id="dcinumber">
 					</label>
 					<h2>Event Information</h2>
-					<label>
+					<label for="event">
 						<span>Event:</span> 
-						<input type="text" id="event" />
+						<input type="text" id="event">
 					</label>
-					<label>
+					<label for="eventdate">
 						<span>Event Date:</span> 
-						<input type="text" id="eventdate" />
+						<input type="text" id="eventdate">
 					</label>
-					<label>
+					<label for="eventlocation">
 						<span>Event Location:</span> 
-						<input type="text" id="eventlocation" />
+						<input type="text" id="eventlocation">
 					</label>
 					<h2>Deck Information</h2>
-					<label>
+					<label for="deckname">
 						<span>Deck Name:</span> 
-						<input type="text" id="deckname" placeholder=" (optional)" />
+						<input type="text" id="deckname" placeholder=" (optional)">
 					</label>
-					<label>
+					<label for="deckdesigner">
 						<span>Deck Designer:</span> 
-						<input type="text" id="deckdesigner" placeholder=" (optional)" />
+						<input type="text" id="deckdesigner" placeholder=" (optional)">
 					</label>
-					<label>
+					<label for="deckmain">
 						<span>Main Deck:</span> 
-						<textarea type="text" id="deckmain" /></textarea>
+						<textarea id="deckmain"></textarea>
 						<span id="protip">(Pro tip: You can simply paste in MTGO, MWS, MTG Salvation, Deckbox "Print", or Tappedout "Text" decks without separating out the sideboard!)</span>
 					</label>
-					<label>
+					<label for="deckside">
 						<span>Sideboard:</span> 
-						<textarea type="text" id="deckside" /></textarea>
+						<textarea id="deckside"></textarea>
 					</label>
 					<h2>Deck Sort Order</h2>
 				</form>
 			</div>
 			<div id="sortorderwrapper">
 				<div id="sortorderfloat">
-					<input type="radio" id="sortorder1" name="sortorder" /><label for="sortorder1">Alphabetically</label>
-					<input type="radio" id="sortorder2" name="sortorder" /><label for="sortorder2">CMC</label>
-					<input type="radio" id="sortorder3" name="sortorder" checked="checked" /><label for="sortorder3">Color (recommended)</label>
-					<input type="radio" id="sortorder4" name="sortorder" /><label for="sortorder4">Numerically</label>
-					<input type="radio" id="sortorder5" name="sortorder" /><label for="sortorder5">Original</label>
+					<input type="radio" id="sortorder1" name="sortorder"><label for="sortorder1">Alphabetically</label>
+					<input type="radio" id="sortorder2" name="sortorder"><label for="sortorder2">CMC</label>
+					<input type="radio" id="sortorder3" name="sortorder" checked><label for="sortorder3">Color (recommended)</label>
+					<input type="radio" id="sortorder4" name="sortorder"><label for="sortorder4">Numerically</label>
+					<input type="radio" id="sortorder5" name="sortorder"><label for="sortorder5">Original</label>
 				</div>
 			</div>
 		</div>
@@ -99,7 +93,7 @@
 			</h2>
 			<iframe id="decklist" name="decklist" height="580" width="440"></iframe>
 			<form>
-				<input type="button" id="download" value="Download Decklist" onclick="generateDecklistPDF('dataurlnewwindow');" />
+				<input type="button" id="download" value="Download Decklist" onclick="generateDecklistPDF('dataurlnewwindow');">
 			</form>
 		</div>
 
@@ -107,6 +101,5 @@
 			Magic: the Gathering Decklist Generator by <a href="http://www.twoevils.org/">April King</a>.  Please send feedback to <a href="mailto:april@twoevils.org?subject=Decklist.org%20feedback">april@twoevils.org</a>.  Magic: The Gathering &reg; Wizards of the Coast.
 		</div>
 	</div>
-
 </body>
 </html>
