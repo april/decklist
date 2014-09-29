@@ -66,6 +66,7 @@ h2 {
 	width: 70%;
 	font-size: 12px;
 	line-height: 15px;
+	padding-left: 5px;
 }
 
 .left input[disabled] {
@@ -74,6 +75,8 @@ h2 {
 
 .left textarea {
 	height: 120px;
+	padding-top: 5px;
+	resize: vertical;
 }
 
 .left #protip {
@@ -111,4 +114,16 @@ h2 {
 #sortorderfloat {
 	display: block;
 	text-align: center;
+}
+
+input:required:invalid, input:focus:invalid,
+textarea:required:invalid,
+input.error, textarea.error {
+	border-color: red;
+	box-shadow: none;
+}
+
+input:required:valid,
+textarea:required:valid {
+	border-color: green;
 }

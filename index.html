@@ -32,37 +32,37 @@
 					<h2>Personal Information</h2>
 					<label for="firstname">
 						<span>First Name:</span> 
-						<input type="text" id="firstname">
+						<input type="text" id="firstname" required>
 					</label>
 					<label for="lastname">
 						<span>Last Name:</span> 
-						<input type="text" id="lastname">
+						<input type="text" id="lastname" required>
 					</label>
 					<label for="dcinumber">
 						<span>DCI #:</span> 
-						<input type="text" id="dcinumber">
+						<input type="text" id="dcinumber" required pattern="\d{1,10}">
 					</label>
 					<h2>Event Information</h2>
 					<label for="event">
 						<span>Event:</span> 
-						<input type="text" id="event">
+						<input type="text" id="event" required>
 					</label>
 					<label for="eventdate">
 						<span>Event Date:</span> 
-						<input type="text" id="eventdate">
+						<input type="text" id="eventdate" required pattern="\d{4}-\d{2}-\d{2}">
 					</label>
 					<label for="eventlocation">
 						<span>Event Location:</span> 
-						<input type="text" id="eventlocation">
+						<input type="text" id="eventlocation" required>
 					</label>
 					<h2>Deck Information</h2>
 					<label for="deckname">
 						<span>Deck Name:</span> 
-						<input type="text" id="deckname" placeholder=" (optional)">
+						<input type="text" id="deckname" placeholder="(optional)">
 					</label>
 					<label for="deckdesigner">
 						<span>Deck Designer:</span> 
-						<input type="text" id="deckdesigner" placeholder=" (optional)">
+						<input type="text" id="deckdesigner" placeholder="(optional)">
 					</label>
 					<label for="deckmain">
 						<span>Main Deck:</span> 
