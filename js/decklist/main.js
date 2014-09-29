@@ -301,7 +301,6 @@ function generateDecklistPDF(outputtype) {
 	parseDecklist();
 
 	// Add the deck to the decklist
-	maindeck_count = 0;
 	var x = 82;
 	var y = 182;
 	dl.setFontStyle('normal');
@@ -313,8 +312,6 @@ function generateDecklistPDF(outputtype) {
 			if (maindeck[i][1] != 0) {
 				dl.text(maindeck[i][1], x, y);
 				dl.text(maindeck[i][0].capitalize(), x + 38, y);
-
-				maindeck_count += parseInt(maindeck[i][1]);
 			}
 
 			y = y + 18;  // move to the next row
@@ -322,7 +319,6 @@ function generateDecklistPDF(outputtype) {
 	}
 
 	// Add the sideboard to the decklist
-	sideboard_count = 0;
 	var x = 356;
 	var y = 434;
 	if (sideboard != []) {
@@ -330,8 +326,6 @@ function generateDecklistPDF(outputtype) {
 
 			dl.text(sideboard[i][1], x, y);
 			dl.text(sideboard[i][0].capitalize(), x + 38, y);
-
-			sideboard_count += parseInt(sideboard[i][1]);
 			y = y + 18;  // move to the next row
 		}
 	}
