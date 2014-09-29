@@ -115,15 +115,3 @@ h2 {
 	display: block;
 	text-align: center;
 }
-
-input:required:invalid, input:focus:invalid,
-textarea:required:invalid,
-input.error, textarea.error {
-	border-color: red;
-	box-shadow: none;
-}
-
-input:required:valid,
-textarea:required:valid {
-	border-color: green;
-}
