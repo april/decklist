@@ -7,8 +7,12 @@ function parseDecklist() {
 	// Let's store the lists in a tidy little array
 	maindeck = [];
 	sideboard = [];
-
-
+	
+	// And let's store their counts for future reference
+	maindeck_count = 0;
+	sideboard_count = 0;
+	
+	
 	// Stop processing the function if there's no main deck
 	if (deckmain == "") { return(null, null); }
 
@@ -16,7 +20,7 @@ function parseDecklist() {
 	deckmain = deckmain.split('\n');
 	deckside = deckside.split('\n');
 
- 
+
 	mtgo_re = /^(\d+)x*\s(.+)/;             // MTGO deck format (4 Brainstorm) also TCG (4x Brainstorm)
 	mtgosb_re = /^SB:\s+(\d+)\s(.+)/;       // Sideboard lines begin with SB:
 	mws_re = /^\s*(\d+)\s+\[.*\]\s+(.+)/;       // MWS, what an ugly format
@@ -33,7 +37,7 @@ function parseDecklist() {
 			quantity = mws_re.exec(deckmain[i])[1];
 			card = mws_re.exec(deckmain[i])[2];
 
-			maindeck.push([card, quantity]);
+			list_add("main", card, quantity);
 		}
 
 		// Parse for Magic Workstation sideboards
@@ -41,7 +45,7 @@ function parseDecklist() {
 			quantity = mwssb_re.exec(deckmain[i])[1];
 			card = mwssb_re.exec(deckmain[i])[2];
 
-			sideboard.push([card, quantity]);
+			list_add("side", card, quantity);
 		}
 
 		// Parse for MTGO/TappedOut style decks
@@ -49,8 +53,11 @@ function parseDecklist() {
 			quantity = mtgo_re.exec(deckmain[i])[1];
 			card = mtgo_re.exec(deckmain[i])[2];
 
-			if (in_sb) { sideboard.push([card, quantity]); }   // TappedOut style Sideboard listing
-			else {       maindeck.push([card, quantity]); }
+			if (in_sb) {	// TappedOut style Sideboard listing
+				list_add("side", card, quantity);
+			} else {
+				list_add("main", card, quantity);
+			}
 		}
 
 		// Parse for MTGO style sideboard cards
@@ -58,7 +65,7 @@ function parseDecklist() {
 			quantity = mtgosb_re.exec(deckmain[i])[1];
 			card = mtgosb_re.exec(deckmain[i])[2];
 
-			sideboard.push([card, quantity]);
+			list_add("side", card, quantity);
 		}
 
 		// If we see "Sideboard:", then we're in the TappedOut style sideboard entries from now on
@@ -73,7 +80,7 @@ function parseDecklist() {
 			quantity = mtgo_re.exec(deckside[i])[1];
 			card = mtgo_re.exec(deckside[i])[2];
 
-			sideboard.push([card, quantity]);
+			list_add("side", card, quantity);
 		}
 	}
 
@@ -150,7 +157,7 @@ function sortDecklist(deck, sortorder) {
 				card = color_to_cards[color][j][1];
 				quantity = color_to_cards[color][j][2];
 
-			 	deck.push([card, quantity]);
+				deck.push([card, quantity]);
 			}
 
 			// Push a blank entry onto deck (to separate colors)
@@ -210,7 +217,7 @@ function sortDecklist(deck, sortorder) {
 				card = cmc_to_cards[cmc][j][1];
 				quantity = cmc_to_cards[cmc][j][2];
 
-			 	deck.push([card, quantity]);
+				deck.push([card, quantity]);
 			}
 
 			// Push a blank entry onto deck (to separate CMCs)
@@ -243,4 +250,15 @@ function sortDecklist(deck, sortorder) {
 	// Return the deck
 	return(deck);
 
+}
+
+// Stub to simplify updating deck and sideboard counts
+function list_add(type, card, quantity) {
+	if (type === "main") {
+		maindeck.push([card, quantity]);
+		maindeck_count += parseInt(quantity);
+	} else if (type === "side") {
+		sideboard.push([card, quantity]);
+		sideboard_count += parseInt(quantity);
+	}
 }
