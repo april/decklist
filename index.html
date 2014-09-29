@@ -94,31 +94,13 @@
 		</div>
 
 		<div class="right">
-			<span id="decklistpreview">
+			<h2>
 				Decklist Preview
-				<iframe id="decklist" name="decklist" height="580" width="440"></iframe>
-			</span>
+			</h2>
+			<iframe id="decklist" name="decklist" height="580" width="440"></iframe>
 			<form>
-	 			<input type="button" id="download" value="Download Decklist" onclick="generateDecklistPDF('dataurlnewwindow');" />
- 			</form>
-			<p>TODO:
-				<ul>
-					<li>Add nice Status window to let you know if everything is OK</li>
-					<li>Add some nice tooltips on how to enter in your deck list manually</li>
-					<li><s>Sort by color and CMC</s></li>
-					<li><s>Support GET parameters to auto-populate decklist</s></li>
-					<li>Verify DCI Number &lt; 11 digits and only digits</li>
-					<li>Auto-convert older DCI numbers to newer format</li>
-					<li>Verify main deck is &gt;= 60 cards, and sideboard is &lt;= 15 cards</li>
-					<li>Verify main deck isn't too long (sorry Battle of Wits)</li>
-					<li>Verify names of all sorts aren't too long</li>
-					<li>Verify date is in the future<s>, and is ISO-8601 formatted</s></li>
-					<li>Unicode support (difficult with jsPDF)</li>
-					<li><s>Fix IE autopreview (if possible)</s> (not possible until native PDF)</li>
-					<li><s>Fix Chrome mobile auto-download</s></li>
-				</ul>
-			</p>
-					
+				<input type="button" id="download" value="Download Decklist" onclick="generateDecklistPDF('dataurlnewwindow');" />
+			</form>
 		</div>
 
 		<div class="footer">
