@@ -12,6 +12,9 @@ function parseDecklist() {
 	maindeck_count = 0;
 	sideboard_count = 0;
 	
+	// Track unrecognized lines. (encoded to prevent XSS)
+	unrecognized = [];
+	
 	
 	// Stop processing the function if there's no main deck
 	if (deckmain == "") { return(null, null); }
@@ -70,7 +73,11 @@ function parseDecklist() {
 
 		// If we see "Sideboard:", then we're in the TappedOut style sideboard entries from now on
 		else if (tosb_re.test(deckmain[i])) { in_sb = true; }
-
+		
+		// Unrecognized, store in appropriate array
+		else {
+			unrecognized.push(htmlEncode(deckmain[i]));
+		}
 	}
 
 	// Now we get to do the same for the sideboard, but we only have to worry about TCG/MTGO style entries
@@ -261,4 +268,8 @@ function list_add(type, card, quantity) {
 		sideboard.push([card, quantity]);
 		sideboard_count += parseInt(quantity);
 	}
+}
+
+function htmlEncode(string) {
+	return string.replace('&', '&amp;').replace('"', '&quot;').replace("'", '&#39;').replace('<', '&lt;').replace('>', '&gt;');
 }

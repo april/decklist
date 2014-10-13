@@ -241,6 +241,12 @@ function generateDecklistPDF(outputtype) {
 		
 	// start with the blank PDF
 	dl = generateDecklistLayout();
+	
+	// Attempt to parse the decklists
+	parseDecklist();
+
+	// input validation alerts
+	validateInput();
 
 	// Helvetica, fuck yeah
 	dl.setFont('helvetica');
@@ -287,8 +293,10 @@ function generateDecklistPDF(outputtype) {
 		dl.setFontSize(12);
 	}
 
-	// put the DCI number into the PDF
-	dcinumber = $("#dcinumber").val();
+	// validate DCI number
+	dcinumber = validateDCI($("#dcinumber").val());
+	
+	// put the DCI number into the PDF	
 	y = 372;
 	if (dcinumber.length > 0) {
 		for (var i = 0; i < dcinumber.length; i++) {
@@ -296,9 +304,6 @@ function generateDecklistPDF(outputtype) {
 			y = y - 24;
 		}
 	}
-
-	// Attempt to parse the decklists
-	parseDecklist();
 
 	// Add the deck to the decklist
 	var x = 82;
@@ -347,4 +352,165 @@ function generateDecklistPDF(outputtype) {
 	else {
 		dl.save('decklist.pdf');
 	}
+}
+
+function validateInput() {
+	/*
+	
+		DCI Number (needs to be <11 digits, only digits)
+		Verify main deck >= 60 cards, SB <= 15 cards
+		Verify main deck does not exceed lines available (44 unique cards)
+		Verify names are not too long
+		Verify date is future-set
+
+	*/
+	
+	// validation object
+	// key = HTML form ID
+	// value = array of error objects: {error_level: error_type}
+	// error levels include "warning" and "error"
+	// error types include "blank", "nonnum", "toolarge", "toosmall",
+	//       "size", "unrecognized", "quantity"
+	validate = {
+		"firstname": [],
+		"lastname": [],
+		"dcinumber": [],
+		"event": [],
+		"eventdate": [],
+		"eventlocation": [],
+		"deckmain": [],
+		"deckside": []
+	};
+	
+	// check first/last name (nonblank)
+	if ($("#firstname").val() === "") {
+		validate.firstname.push({"warning": "blank"});
+	}
+	if ($("#lastname").val() === "") {
+		validate.lastname.push({"warning": "blank"});
+	}
+	
+	// check DCI number (nonblank, numeric, < 11 digits)
+	if ($("#dcinumber").val() === "") {
+		validate.dcinumber.push({"warning": "blank"});
+	}
+	if (!$("#dcinumber").val().match(/^[\d]+$/)) {
+		validate.dcinumber.push({"error": "nonnum"});
+	}
+	if ($("#dcinumber").val().length >= 11) {
+		validate.dcinumber.push({"error": "toolarge"});
+	}
+	
+	// check event name, date, location (nonblank)
+	if ($("#event").val() === "") {
+		validate.event.push({"warning": "blank"});
+	}
+	if ($("#eventdate").val() === "") {
+		validate.eventdate.push({"warning": "blank"});
+	}
+	if ($("#eventlocation").val() === "") {	
+		validate.eventlocation.push({"warning": "blank"});
+	}
+	
+	// check maindeck (size, number of unique cards, unrecognized cards)
+	// check sideboard (size, unrecognized cards)
+	if (maindeck_count != 60) {
+		validate.deckmain.push({"warning": "size"});
+	}
+	if (maindeck.length > 44) {
+		validate.deckmain.push({"error": "toolarge"});
+	}
+	if (sideboard.length < 15) {
+		validate.deckside.push({"warning": "toosmall"});
+	}
+	if (sideboard.length > 15) {
+		validate.deckside.push({"error": "toolarge"});
+	}
+	if (unrecognized.length !== 0) {
+		validate.deckmain.puah({"warning": "unrecognized"});
+	}
+
+	// check combined main/sb (quantity of each unique card)
+	mainPlusSide = mainAndSide();
+	fourOrLess = true;
+	for (i = 0; i < mainPlusSide.length && fourOrLess; i++) {
+		if (parseInt(mainPlusSide[i][1]) > 4) {
+			fourOrLess = false;
+		}
+	}
+	if (fourOrLess === false) {
+		validate.deckmain.push({"warning": "quantity"});
+	}
+	
+	
+	inputTooltips(validate);
+}
+
+// returns an array combining the main and sideboards
+function mainAndSide() {
+	// make deep copies by value of the maindeck and sideboard
+	combined = $.extend(true,[],maindeck);
+	sideQuants = $.extend(true,[],sideboard);
+	
+	// combine the cards!
+	combined.map(addSideQuants);
+	combined = combined.concat(sideQuants);
+	
+	return combined;
+	
+	// mapping function; adds quantities of identical names in main/side
+	// and removes those matching cards from sideQuants
+	function addSideQuants(element) {
+		foundSideElement = false;
+		for (i = 0; i < sideQuants.length && sideQuants.length && foundSideElement === false; i++) {
+			if (sideQuants[i][0] === element[0]) {
+				foundSideElement = i;
+			}
+		}
+		if (typeof foundSideElement === "number") {
+			element[1] = (parseInt(element[1]) + parseInt(sideQuants[foundSideElement][1])).toString();
+			sideQuants.splice(foundSideElement, 1);
+		}
+		return element;
+	}
+}
+
+// Change tooltips and status box to reflect current errors/warnings (or lack thereof)
+function inputTooltips(valid) {
+	// TODO: implement tooltips and status box
+}
+
+function validateDCI(dci) {
+	return dci;
+	// TODO: implement DCI # checking / constructing
+	/*
+	
+	The process for generating DCI numbers is:
+
+	Prepend a zero
+	Calculate check digit
+	Prepend that check digit
+	(and repeat until full length DCI number)
+
+	-----------------------------------------------------
+
+    var primes = [43, 47, 53, 71, 73, 31, 37, 41, 59, 61, 67, 29]
+    var dcinumber = "1076753660"
+     
+    var sum   = 0
+    var cdsum = 0
+    for (i = 0; i < dcinumber.length-1; i++){
+        sum += parseInt(dcinumber[i+1])*primes[i]
+    }
+    for (i = 0; i < dcinumber.length; i++){
+        cdsum += parseInt(dcinumber[i])*primes[i]
+    }
+     
+    console.log("Next check digit would be " + (1 + Math.floor(cdsum / 10) % 9))
+     
+    var valid = (1 + Math.floor(sum / 10) % 9) == parseInt(dcinumber[0])
+     
+    console.log(valid)
+	
+	*/
 }
