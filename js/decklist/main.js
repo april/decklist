@@ -481,7 +481,7 @@ function statusAndTooltips(valid) {
 	// notifications are stored as [[message, for, level], ...]
 	// (for = input element id, level = "warning" or "error")
 	notifications = [];
-	errorlevel = 0; // 0x00 is valid, 0x01 is warning, 0x10 is error
+	errorlevel = 0; // 0x000 is valid, 0x001 is empty, 0x010 is warning, 0x100 is error
 	
 	// check for validation objects in every category (firstname, lastname, etc.)
 	for (prop in validate) {
@@ -489,7 +489,7 @@ function statusAndTooltips(valid) {
 		for (i=0; i < proplength; i++) {
 			// bitwise AND the current error level and that of the validation object
 			validationobject = validate[prop][i];
-			errorlevel = errorlevel | (validationobject["warning"] ? 0x1 : 0x10);
+			errorlevel = errorlevel | (validationobject["warning"] ? 0x010 : 0x100);
 			
 			// add notification message for the validation object
 			// 
@@ -549,6 +549,17 @@ function statusAndTooltips(valid) {
 		}
 	}
 	
+	// check if all fields are empty; if so, set errorlevel to indicate that
+	allempty = true;
+	$(".left input, .left textarea").each(function() {
+		if ($(this).val()) {
+			allempty = false;
+		}
+	});
+	if (allempty) {
+		errorlevel = 0x001;
+	}
+	
 	// concatenate new notifications HTML fragment
 	notificationshtml = "";
 	notificationslength = notifications.length;
@@ -560,10 +571,12 @@ function statusAndTooltips(valid) {
 	
 	// compute new status
 	newstatus = "valid";
-	if (errorlevel & 0x10) {
+	if (errorlevel & 0x100) {
 		newstatus = "error";
-	} else if (errorlevel & 0x01) {
+	} else if (errorlevel & 0x010) {
 		newstatus = "warning";
+	} else if (errorlevel & 0x001) {
+		newstatus = "empty";
 	}
 	
 	// set new status, display new notifications
