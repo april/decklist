@@ -76,7 +76,10 @@ function parseDecklist() {
 		
 		// Unrecognized, store in appropriate array
 		else {
-			unrecognized.push(htmlEncode(deckmain[i]));
+			// only store if it's not a falsey value (empty string, etc.)
+			if(htmlEncode(deckmain[i])){
+				unrecognized.push(htmlEncode(deckmain[i]));
+			}
 		}
 	}
 

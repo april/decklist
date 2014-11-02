@@ -294,6 +294,7 @@ function generateDecklistPDF(outputtype) {
 	}
 
 	// validate DCI number
+	// TODO: set dcinumber to "" if nonnum or otherwise breaking invalid (>11 digits)
 	dcinumber = validateDCI($("#dcinumber").val());
 	
 	// put the DCI number into the PDF	
@@ -354,12 +355,10 @@ function generateDecklistPDF(outputtype) {
 	}
 }
 
+// TODO: comment
 function validateInput() {
 	/*
 	
-		DCI Number (needs to be <11 digits, only digits)
-		Verify main deck >= 60 cards, SB <= 15 cards
-		Verify main deck does not exceed lines available (44 unique cards)
 		Verify names are not too long
 		Verify date is future-set
 
@@ -393,8 +392,7 @@ function validateInput() {
 	// check DCI number (nonblank, numeric, < 11 digits)
 	if ($("#dcinumber").val() === "") {
 		validate.dcinumber.push({"warning": "blank"});
-	}
-	if (!$("#dcinumber").val().match(/^[\d]+$/)) {
+	} else if (!$("#dcinumber").val().match(/^[\d]+$/)) {
 		validate.dcinumber.push({"error": "nonnum"});
 	}
 	if ($("#dcinumber").val().length >= 11) {
@@ -408,29 +406,27 @@ function validateInput() {
 	if ($("#eventdate").val() === "") {
 		validate.eventdate.push({"warning": "blank"});
 	}
+	// TODO: validate date format
 	if ($("#eventlocation").val() === "") {	
 		validate.eventlocation.push({"warning": "blank"});
 	}
 	
-	// check maindeck (size, number of unique cards, unrecognized cards)
-	// check sideboard (size, unrecognized cards)
+	// check maindeck (size, number of unique cards)
+	// check sideboard (size)
 	if (maindeck_count != 60) {
 		validate.deckmain.push({"warning": "size"});
 	}
 	if (maindeck.length > 44) {
 		validate.deckmain.push({"error": "toolarge"});
 	}
-	if (sideboard.length < 15) {
-		validate.deckside.push({"warning": "toosmall"});
-	}
-	if (sideboard.length > 15) {
+	if (sideboard_count > 15) {
 		validate.deckside.push({"error": "toolarge"});
 	}
-	if (unrecognized.length !== 0) {
-		validate.deckmain.puah({"warning": "unrecognized"});
+	if (sideboard_count < 15) {
+		validate.deckside.push({"warning": "toosmall"});
 	}
 
-	// check combined main/sb (quantity of each unique card)
+	// check combined main/sb (quantity of each unique card, unrecognized cards)
 	mainPlusSide = mainAndSide();
 	fourOrLess = true;
 	for (i = 0; i < mainPlusSide.length && fourOrLess; i++) {
@@ -441,9 +437,12 @@ function validateInput() {
 	if (fourOrLess === false) {
 		validate.deckmain.push({"warning": "quantity"});
 	}
+	if (unrecognized.length !== 0) {
+		validate.deckmain.push({"warning": "unrecognized"});
+	}
 	
 	
-	inputTooltips(validate);
+	statusAndTooltips(validate);
 }
 
 // returns an array combining the main and sideboards
@@ -476,8 +475,104 @@ function mainAndSide() {
 }
 
 // Change tooltips and status box to reflect current errors/warnings (or lack thereof)
-function inputTooltips(valid) {
-	// TODO: implement tooltips and status box
+// TODO: implement tooltips
+function statusAndTooltips(valid) {
+	// status box update
+	// notifications are stored as [[message, for, level], ...]
+	// (for = input element id, level = "warning" or "error")
+	notifications = [];
+	errorlevel = 0; // 0x00 is valid, 0x01 is warning, 0x10 is error
+	
+	// check for validation objects in every category (firstname, lastname, etc.)
+	for (prop in validate) {
+		proplength = validate[prop].length;
+		for (i=0; i < proplength; i++) {
+			// bitwise AND the current error level and that of the validation object
+			validationobject = validate[prop][i];
+			errorlevel = errorlevel | (validationobject["warning"] ? 0x1 : 0x10);
+			
+			// add notification message for the validation object
+			// 
+			// note: this section runs only once per validation object, so all checks
+			// can be run in else-if blocks; only one update is made per object
+			if (prop === "firstname") {
+				if (validationobject["warning"] === "blank") {
+					notifications.push(["You should enter your first name.", "firstname", "warning"]);
+				}
+			} else if (prop === "lastname") {
+				if (validationobject["warning"] === "blank") {
+					notifications.push(["You should enter your last name.", "lastname", "warning"]);
+				}
+			} else if (prop === "dcinumber") {
+				if (validationobject["warning"] === "blank") {
+					notifications.push(["You should enter your DCI number.", "dcinumber", "warning"]);
+				} else if (validationobject["error"] === "nonnum") {
+					notifications.push(["Your DCI number must only contain numbers.", "dcinumber", "error"]);
+				} else if (validationobject["error"] === "toolarge") {
+					notifications.push(["Your DCI number must be 10 digits or less.", "dcinumber", "error"]);
+				}
+			} else if (prop === "event") {
+				if (validationobject["warning"] === "blank") {
+					notifications.push(["You should enter the event name.", "event", "warning"]);
+				}
+			} else if (prop === "eventdate") {
+				if (validationobject["warning"] === "blank") {
+					notifications.push(["You should enter the event date.", "eventdate", "warning"]);
+				}
+			} else if (prop === "eventlocation") {
+				if (validationobject["warning"] === "blank") {
+					notifications.push(["You should enter the event location.", "eventlocation", "warning"]);
+				}
+			} else if (prop === "deckmain") {
+				if (validationobject["warning"] === "size") {
+					notifications.push(["Most decks consist of exactly 60 cards.", "deckmain", "warning"]);
+				} else if (validationobject["error"] === "toolarge") {
+					notifications.push(["This PDF only has space for up to 44 unique cards.", "deckmain", "error"]);
+				} else if (validationobject["warning"] === "quantity") {
+					// TODO: make sure excess cards are listed
+					// excesscards = "<li>" + excesscards.join("</li><li>") + "</li>"
+					excesscards = "";
+					notifications.push(["You have more than 4 copies of the following cards:" + excesscards, "dekmain", "warning"]);
+				} else if (validationobject["warning"] === "unrecognized") {
+					// TODO: make sure unrecognized cards are listed
+					// unrecognizedcards = "<li>" + unrecognized.join("</li><li>") + "</li>"
+					unrecognizedcards = "";
+					notifications.push(["The following lines were not recognized as actual Magic: The Gathering cards:" + unrecognizedcards, "deckmain", "warning"]);
+				}
+			} else if (prop === "deckside") {
+				if (validationobject["warning"] === "toosmall") {
+					notifications.push(["Most sideboards consist of exactly 15 cards.", "deckside", "warning"]);
+				} else if (validationobject["error"] === "toolarge") {
+					notifications.push(["Sideboards may not consist of more than 15 cards.", "deckside", "error"]);
+				}
+			}
+		}
+	}
+	
+	// concatenate new notifications HTML fragment
+	notificationshtml = "";
+	notificationslength = notifications.length;
+	for (i=0; i < notificationslength; i++) {
+		notificationshtml += "<li class=\"" + notifications[i][2] + "\">";
+		notificationshtml += "<label for=\"" + notifications[i][1] + "\">";
+		notificationshtml += notifications[i][0] + "</label></li>";
+	}
+	
+	// compute new status
+	newstatus = "valid";
+	if (errorlevel & 0x10) {
+		newstatus = "error";
+	} else if (errorlevel & 0x01) {
+		newstatus = "warning";
+	}
+	
+	// set new status, display new notifications
+	$(".status").removeClass("default empty valid warning error").addClass(newstatus);
+	$(".status .details").html(notificationshtml);
+	
+	
+	// tooltip updates
+	
 }
 
 function validateDCI(dci) {

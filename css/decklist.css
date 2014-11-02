@@ -107,11 +107,101 @@ h2 {
 	font-size: 13px;
 }
 
+#sortorderfloat {
+	display: block;
+	text-align: center;
+}
+
 #download {
 	margin-top: 10px;
 }
 
-#sortorderfloat {
-	display: block;
-	text-align: center;
+.status {
+	border-width: 5px;
+	border-style: solid;
+	margin: 10px 0;
+	padding: 10px 30px;
+	position: relative;
+}
+
+.status.default, .status.empty {
+	border-color: grey;
+	border-color: rgba(128, 128, 128, 0.3);
+}
+
+.status.valid {
+	border-color: green;
+	border-color: rgba(0, 125, 0, 0.3);
+}
+
+.status.warning {
+	border-color: #ffdc00;
+	border-color: rgba(255, 220, 0, 0.3);
+}
+
+.status.error {
+	border-color: red;
+	border-color: rgba(255, 0, 0, 0.3);
+}
+
+.status.empty:before {
+	content: "your decklist seems to be empty; try adding some cards?";
+	font-size: 12px;
+	font-style: italic;
+	position: absolute;
+		top: 4px;
+		left: 0;
+		right: 0;
+}
+
+.statusmark {
+	font-family: Arial, serif;
+	font-size: 60px;
+	font-weight: bold;
+	height: 80px;
+	margin: 5px;
+	text-shadow: grey 0 0 3px;
+}
+
+.default .statusmark:before, .empty .statusmark:before {
+	color: grey;
+	content: "?";
+}
+
+.valid .statusmark:before {
+	color: green;
+	content: "\2714"; /* heavy checkmark */
+}
+
+.warning .statusmark:before {
+	color: #ffdc00;
+	content: "?";
+}
+
+.error .statusmark:before {
+	color: red;
+	content: "\2716"; /* heavy multiplication x */
+}
+
+.status .details {
+	list-style-type: circle;
+	margin-top: 0;
+	margin-bottom: 0;
+	text-align: left;
+}
+
+.details > li {
+	transition: color 0.15s;
+}
+
+.details > li:hover {
+	color: inherit;
+}
+
+.details .warning {
+	color: orange;
+}
+
+.details .error {
+	color: firebrick;
 }
