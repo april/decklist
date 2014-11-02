@@ -165,10 +165,10 @@ function sortDecklist(deck, sortorder) {
 
 		}
 	
-		// We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd row
+		// We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd column
 		if (deck.length > 31) {
-			if (deck[32][1] == 0) {
-				deck.splice(32, 1);
+			if (deck[31][1] == 0) {
+				deck.splice(31, 1);
 			}
 		}
 	}
@@ -225,10 +225,10 @@ function sortDecklist(deck, sortorder) {
 
 		}
 	
-		// We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd row
+		// We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd column
 		if (deck.length > 31) {
-			if (deck[32][1] == 0) {
-				deck.splice(32, 1);
+			if (deck[31][1] == 0) {
+				deck.splice(31, 1);
 			}
 		}
 	}
