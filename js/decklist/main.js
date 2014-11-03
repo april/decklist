@@ -13,6 +13,19 @@ $(document).ready(function() {
 	$("#eventdate").datepicker({ dateFormat: "yy-mm-dd" }); // ISO-8601, woohoo
 	$("#download").button();
 	$("#sortorderfloat").buttonset();
+	
+	// initialize field tooltips, replace | with <br> in tooltip content
+	$(".left input, .left textarea").tooltip({
+		content: function(callback) {
+			callback($(this).prop("title").replace(/\|/g, "<br>"));
+		},
+		position: {
+			my: "right top+10",
+			at: "right bottom",
+			collision: "flipfit"
+		},
+		tooltipClass: "tooltip"
+	});
 
 	// detect browser PDF support
 	detectPDFPreviewSupport();
@@ -434,6 +447,7 @@ function validateInput() {
 			fourOrLess = false;
 		}
 	}
+	// TODO: add list of card names which exceed quantity or unrecognized lines
 	if (fourOrLess === false) {
 		validate.deckmain.push({"warning": "quantity"});
 	}
@@ -475,7 +489,6 @@ function mainAndSide() {
 }
 
 // Change tooltips and status box to reflect current errors/warnings (or lack thereof)
-// TODO: implement tooltips
 function statusAndTooltips(valid) {
 	// status box update
 	// notifications are stored as [[message, for, level], ...]
@@ -532,7 +545,7 @@ function statusAndTooltips(valid) {
 					// TODO: make sure excess cards are listed
 					// excesscards = "<li>" + excesscards.join("</li><li>") + "</li>"
 					excesscards = "";
-					notifications.push(["You have more than 4 copies of the following cards:" + excesscards, "dekmain", "warning"]);
+					notifications.push(["You have more than 4 copies of the following cards:" + excesscards, "deckmain", "warning"]);
 				} else if (validationobject["warning"] === "unrecognized") {
 					// TODO: make sure unrecognized cards are listed
 					// unrecognizedcards = "<li>" + unrecognized.join("</li><li>") + "</li>"
@@ -550,23 +563,34 @@ function statusAndTooltips(valid) {
 	}
 	
 	// check if all fields are empty; if so, set errorlevel to indicate that
+	// additionally, clear their titles and classes so new tooltips can be set
 	allempty = true;
 	$(".left input, .left textarea").each(function() {
 		if ($(this).val()) {
 			allempty = false;
 		}
+		$(this).prop("title", "");
+		$(this).removeClass("warning error");
 	});
 	if (allempty) {
 		errorlevel = 0x001;
 	}
 	
-	// concatenate new notifications HTML fragment
+	// compose new notifications HTML fragment, set new tooltips, and set input field classes
 	notificationshtml = "";
 	notificationslength = notifications.length;
 	for (i=0; i < notificationslength; i++) {
+		// create status box HTML fragment
 		notificationshtml += "<li class=\"" + notifications[i][2] + "\">";
 		notificationshtml += "<label for=\"" + notifications[i][1] + "\">";
 		notificationshtml += notifications[i][0] + "</label></li>";
+		
+		// update field tooltips and classes
+		fieldid = "#" + notifications[i][1];
+		$(fieldid).addClass(notifications[i][2]);
+		// TODO: parse HTML lists into text for cards exceeding quantity or unrecognized lines
+		newtitle = $(fieldid).prop("title") + ($(fieldid).prop("title") === "" ? "" : "|") + "&bull; " + notifications[i][0];
+		$(fieldid).prop("title", newtitle);
 	}
 	
 	// compute new status
@@ -582,10 +606,6 @@ function statusAndTooltips(valid) {
 	// set new status, display new notifications
 	$(".status").removeClass("default empty valid warning error").addClass(newstatus);
 	$(".status .details").html(notificationshtml);
-	
-	
-	// tooltip updates
-	
 }
 
 function validateDCI(dci) {

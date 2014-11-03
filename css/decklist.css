@@ -69,6 +69,16 @@ h2 {
 	padding-left: 5px;
 }
 
+.left input.warning:hover, .left textarea.warning:hover,
+.left input.warning:focus, .left textarea.warning:focus {
+	border-color: #ffdc00;
+}
+
+.left input.error:hover, .left textarea.error:hover,
+.left input.error:focus, .left textarea.error:focus {
+	border-color: red;
+}
+
 .left input[disabled] {
 	opacity: 0.6;
 }
@@ -86,6 +96,15 @@ h2 {
 	margin-left: 20%;
 	margin-top: -15px;
 	margin-bottom: 10px;
+}
+
+.tooltip {
+	border: 2px solid #aaa;
+	box-shadow: 0 0 5px #aaa;
+	padding: 8px;
+	position: absolute;
+	z-index: 9999;
+	/*max-width: 300px;*/
 }
 
 .left label {
@@ -196,6 +215,10 @@ h2 {
 
 .details > li:hover {
 	color: inherit;
+}
+
+.details label {
+	cursor: pointer;
 }
 
 .details .warning {
