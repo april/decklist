@@ -9,9 +9,10 @@ $(document).ready(function() {
 	$("input[type='radio']").change(keyupBlock);  // sort order
 
 	// bind a date picker to the event date (thanks, jQuery UI)
-	// also skin the download button
+	// also skin the upload and download button
 	$("#eventdate").datepicker({ dateFormat: "yy-mm-dd" }); // ISO-8601, woohoo
 	$("#download").button();
+	$("#upload").button();
 	$("#sortorderfloat").buttonset();
 
 	// detect browser PDF support
@@ -82,6 +83,11 @@ function parseGET() {
 
 			document.getElementsByTagName("head")[0].appendChild(element);
 		}
+	}
+
+	// make the upload button visible, if uploadURL exists
+	if ($._GET[ "uploadURL" ] != undefined) {
+		$("#upload").css("display", "inline-block");
 	}
 }
 
@@ -347,4 +353,8 @@ function generateDecklistPDF(outputtype) {
 	else {
 		dl.save('decklist.pdf');
 	}
+}
+
+function uploadDecklistPDF() {
+	alert("uploaded PDF");
 }

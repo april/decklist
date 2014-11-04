@@ -107,8 +107,12 @@ h2 {
 	font-size: 13px;
 }
 
-#download {
+#download, #upload {
 	margin-top: 10px;
+}
+
+#upload {
+	display: none;
 }
 
 #sortorderfloat {
