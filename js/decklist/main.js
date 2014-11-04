@@ -51,7 +51,7 @@ String.prototype.capitalize = function() {
 
 // Parse the GET attributes, locking out fields as needed
 function parseGET() {
-	var params = ["event", "eventdate", "eventlocation", "deckmain", "deckside"];
+	var params = ["firstname", "lastname", "dcinumber", "event", "eventdate", "eventlocation", "deckmain", "deckside"];
 
 	// check for event, eventdate, or eventlocation and lock down those input fields
 	for (var i = 0; i < params.length; i++) {
