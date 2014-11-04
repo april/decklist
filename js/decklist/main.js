@@ -349,12 +349,28 @@ function generateDecklistPDF(outputtype) {
 		domdl = dl.output('dataurlstring');
 
 		// Put the DOM into the live preview iframe
-		$('iframe').attr('src', domdl); }
+		$('iframe').attr('src', domdl);
+	}
+	else if (outputtype == 'raw') {
+		rawPDF = dl.output();
+		return(rawPDF);
+	}
 	else {
 		dl.save('decklist.pdf');
 	}
 }
 
 function uploadDecklistPDF() {
-	alert("uploaded PDF");
+	// generate the raw PDF data
+	rawPDF = generateDecklistPDF('raw');
+
+	// grab the URL to POST to, set the action on the form to said URL
+	uploadURL = $._GET[ "uploadURL" ];
+	$( "#formupload" ).attr("action", uploadURL);
+
+	// set the proper input value
+	$( "#decklistPDF").val(rawPDF);
+
+	// and make a POST, huzzah!
+	$( "#formupload" ).submit();
 }

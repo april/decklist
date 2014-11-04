@@ -111,7 +111,7 @@ h2 {
 	margin-top: 10px;
 }
 
-#upload {
+#upload, #formupload {
 	display: none;
 }
 
