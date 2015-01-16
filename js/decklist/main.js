@@ -174,8 +174,8 @@ function generateDecklistLayout() {
 
 	dl.setFontSize(7);
 	dl.setFontStyle('normal');
-	dl.text('Table', 422, 40);
-	dl.text('Number', 418, 48);
+	dl.text('Table', 421, 40);
+	dl.text('Number', 417, 48);
 	dl.text('First Letter of', 508, 40);
 	dl.text('Last Name', 516, 48);
 	dl.text('Date:', 169, 68);
