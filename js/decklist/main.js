@@ -122,6 +122,7 @@ function generateDecklistLayout() {
 	dl.rect(135, 78, 441, 24);  // location + deck name
 	dl.rect(355, 54, 221, 72);  // event + deck name + deck designer
 	dl.rect(552, 30, 24, 24);   // first letter
+	dl.rect(445, 30, 55, 24);   // table number
 
 	dl.rect(27, 140, 24, 628);  // last name + first name + dci
 	dl.rect(27, 140, 24, 270);  // dci
@@ -173,6 +174,8 @@ function generateDecklistLayout() {
 
 	dl.setFontSize(7);
 	dl.setFontStyle('normal');
+	dl.text('Table', 422, 40);
+	dl.text('Number', 418, 48);
 	dl.text('First Letter of', 508, 40);
 	dl.text('Last Name', 516, 48);
 	dl.text('Date:', 169, 68);
