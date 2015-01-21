@@ -247,6 +247,14 @@ function sortDecklist(deck, sortorder) {
 		for (i = 0; i < deck.length; i++) { deck[i] = [ deck[i][2], deck[i][0] ] }
 	}
 
+	// Get the card's true English name (ignoring any particular capitalization that someone may have done)
+	for (i = 0; i < deck.length; i++) {
+		var lcard = deck[i][0].toLowerCase()
+		if (cards[ lcard ] != undefined) {
+			deck[i][0] = cards[ lcard ]['n']
+		}
+	}
+
 	// Return the deck
 	return(deck);
 

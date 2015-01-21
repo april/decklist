@@ -50,6 +50,9 @@ for card in cards:
 	if 'cmc' not in cards[card]: ocards[ocard]['m'] = 99
 	else: ocards[ocard]['m'] = cards[card]['cmc']
 
+	# And put the true name in there as well
+	ocards[ocard]['n'] = card
+
 # Print out the full list of cards
 ojsonfh = open("decklist-cards.js", "w")
 ojsonfh.write('cards=')
