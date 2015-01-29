@@ -306,9 +306,13 @@ function generateDecklistPDF(outputtype) {
 		dl.setFontSize(12);
 	}
 
-	// validate DCI number
-	// TODO: set dcinumber to "" if nonnum or otherwise breaking invalid (>11 digits)
-	dcinumber = validateDCI($("#dcinumber").val());
+	/*
+	 * to implement later; needs further discussion
+	 
+		// TODO: implement, see validateDCI method
+		// validate DCI number
+		dcinumber = validateDCI($("#dcinumber").val());
+	*/
 	
 	// put the DCI number into the PDF	
 	y = 372;
@@ -371,14 +375,15 @@ function generateDecklistPDF(outputtype) {
 // TODO: comment
 function validateInput() {
 	/*
-	
-		Verify names are not too long
-		Verify date is future-set
+		TODO:
+			Verify names are not too long
+				looks like ~14 "m" characters starts to reach the limit
+			Verify date is future-set
 
 	*/
 	
 	// validation object
-	// key = HTML form ID
+	// key = HTML form object (input or textarea) ID
 	// value = array of error objects: {error_level: error_type}
 	// error levels include "warning" and "error"
 	// error types include "blank", "nonnum", "toolarge", "toosmall",
@@ -419,7 +424,9 @@ function validateInput() {
 	if ($("#eventdate").val() === "") {
 		validate.eventdate.push({"warning": "blank"});
 	}
-	// TODO: validate date format
+	if (!$("#eventdate").val().match(/^\d{4}\-\d{2}\-\d{2}$/)) {
+		validate.eventdate.push({"error": "unrecognized"});
+	}
 	if ($("#eventlocation").val() === "") {	
 		validate.eventlocation.push({"warning": "blank"});
 	}
@@ -442,20 +449,24 @@ function validateInput() {
 	// check combined main/sb (quantity of each unique card, unrecognized cards)
 	mainPlusSide = mainAndSide();
 	fourOrLess = true;
-	for (i = 0; i < mainPlusSide.length && fourOrLess; i++) {
+	excessCards = [];
+	unrecognizedCards = [];
+	for (i = 0; i < mainPlusSide.length; i++) {
 		if (parseInt(mainPlusSide[i][1]) > 4) {
+			// TODO: add checks for basic lands, relentless rats, shadowborn apostle
 			fourOrLess = false;
+			excessCards.push(mainPlusSide[i][0]);
 		}
 	}
-	// TODO: add list of card names which exceed quantity or unrecognized lines
 	if (fourOrLess === false) {
 		validate.deckmain.push({"warning": "quantity"});
 	}
 	if (unrecognized.length !== 0) {
+		unrecognizedCards = unrecognized
 		validate.deckmain.push({"warning": "unrecognized"});
 	}
 	
-	
+	// pass validation data to output status/tooltip information
 	statusAndTooltips(validate);
 }
 
@@ -531,6 +542,8 @@ function statusAndTooltips(valid) {
 			} else if (prop === "eventdate") {
 				if (validationobject["warning"] === "blank") {
 					notifications.push(["You should enter the event date.", "eventdate", "warning"]);
+				} else if (validationobject["error"] === "unrecognized") {
+					notifications.push(["Event dates should be in the following format: YYYY-MM-DD.", "eventdate", "error"]);
 				}
 			} else if (prop === "eventlocation") {
 				if (validationobject["warning"] === "blank") {
@@ -542,15 +555,15 @@ function statusAndTooltips(valid) {
 				} else if (validationobject["error"] === "toolarge") {
 					notifications.push(["This PDF only has space for up to 44 unique cards.", "deckmain", "error"]);
 				} else if (validationobject["warning"] === "quantity") {
-					// TODO: make sure excess cards are listed
-					// excesscards = "<li>" + excesscards.join("</li><li>") + "</li>"
-					excesscards = "";
-					notifications.push(["You have more than 4 copies of the following cards:" + excesscards, "deckmain", "warning"]);
+					excessCardsHtml = "<ul><li>" + excessCards.join("</li><li>") + "</li></ul>";
+					notifications.push(["The following cards exceed 4 copies across the maindeck and sideboard:" + excessCardsHtml, "deckmain", "warning"]);
 				} else if (validationobject["warning"] === "unrecognized") {
 					// TODO: make sure unrecognized cards are listed
-					// unrecognizedcards = "<li>" + unrecognized.join("</li><li>") + "</li>"
-					unrecognizedcards = "";
-					notifications.push(["The following lines were not recognized as actual Magic: The Gathering cards:" + unrecognizedcards, "deckmain", "warning"]);
+					// current status: only unparseable lines are listed,
+					//   unrecognized cards are still listed normally - need to
+					//   cross-check against cards database
+					unrecognizedCardsHtml = "<ul><li>" + unrecognizedCards.join("</li><li>") + "</li></ul>";
+					notifications.push(["The following lines could not be parsed as Magic: The Gathering cards:" + unrecognizedCardsHtml, "deckmain", "warning"]);
 				}
 			} else if (prop === "deckside") {
 				if (validationobject["warning"] === "toosmall") {
@@ -562,9 +575,10 @@ function statusAndTooltips(valid) {
 		}
 	}
 	
-	// check if all fields are empty; if so, set errorlevel to indicate that
-	// also clear titles and classes so new tooltips can be set
+	// check if all fields are empty; if they are, set errorlevel accordingly
+	// close active tooltips, clear titles and classes for new tooltip text
 	allempty = true;
+	$(".left input, .left textarea").tooltip("close");
 	$(".left input, .left textarea").each(function() {
 		if ($(this).val()) {
 			allempty = false;
@@ -588,10 +602,24 @@ function statusAndTooltips(valid) {
 		// update field tooltips and classes
 		fieldid = "#" + notifications[i][1];
 		$(fieldid).addClass(notifications[i][2]);
-		// TODO: parse HTML lists into text for cards exceeding quantity or unrecognized lines
-		newtitle = $(fieldid).prop("title") + ($(fieldid).prop("title") === "" ? "" : "|") + "&bull; " + notifications[i][0];
+		
+		// we need a new line only if the title isn't blank AND it doesn't end in HTML
+		// as all the HTML elements included are block elements
+		appendNewLine = !($(fieldid).prop("title") === "" || $(fieldid).prop("title").slice(-1) === ">");
+		
+		// append the new notification, prepended with a vertical bar if it
+		// requires a <br> to be inserted (bar is converted on the fly)
+		newtitle = $(fieldid).prop("title") + (appendNewLine ? "|" : "") + "&bull; " + notifications[i][0];
 		$(fieldid).prop("title", newtitle);
 	}
+	// TODO: rewrite this to use a new array for notification field text
+	// and replace this hacky method of fixing the problem
+	$(".left input, .left textarea").each(function() {
+		if ($(this).prop("title").indexOf("|") === -1 && $(this).prop("title").indexOf(">") === -1) {
+			newertitle = $(this).prop("title").slice(7);
+			$(this).prop("title", newertitle);
+		}
+	});
 	
 	// compute new status
 	newstatus = "valid";
@@ -608,37 +636,40 @@ function statusAndTooltips(valid) {
 	$(".status .details").html(notificationshtml);
 }
 
+/*
+ * to implement later; needs further discussion
+ 
 function validateDCI(dci) {
 	return dci;
 	// TODO: implement DCI # checking / constructing
 	/*
 	
-	The process for generating DCI numbers is:
+	// The process for generating DCI numbers is:
 
-	Prepend a zero
-	Calculate check digit
-	Prepend that check digit
-	(and repeat until full length DCI number)
+	// Prepend a zero
+	// Calculate check digit
+	// Prepend that check digit
+	// (and repeat until full length DCI number)
 
-	-----------------------------------------------------
+	// -----------------------------------------------------
 
-    var primes = [43, 47, 53, 71, 73, 31, 37, 41, 59, 61, 67, 29]
-    var dcinumber = "1076753660"
+    // var primes = [43, 47, 53, 71, 73, 31, 37, 41, 59, 61, 67, 29]
+    // var dcinumber = "1076753660"
      
-    var sum   = 0
-    var cdsum = 0
-    for (i = 0; i < dcinumber.length-1; i++){
-        sum += parseInt(dcinumber[i+1])*primes[i]
-    }
-    for (i = 0; i < dcinumber.length; i++){
-        cdsum += parseInt(dcinumber[i])*primes[i]
-    }
+    // var sum   = 0
+    // var cdsum = 0
+    // for (i = 0; i < dcinumber.length-1; i++){
+        // sum += parseInt(dcinumber[i+1])*primes[i]
+    // }
+    // for (i = 0; i < dcinumber.length; i++){
+        // cdsum += parseInt(dcinumber[i])*primes[i]
+    // }
      
-    console.log("Next check digit would be " + (1 + Math.floor(cdsum / 10) % 9))
+    // console.log("Next check digit would be " + (1 + Math.floor(cdsum / 10) % 9))
      
-    var valid = (1 + Math.floor(sum / 10) % 9) == parseInt(dcinumber[0])
+    // var valid = (1 + Math.floor(sum / 10) % 9) == parseInt(dcinumber[0])
      
-    console.log(valid)
+    // console.log(valid)
 	
-	*/
 }
+*/
