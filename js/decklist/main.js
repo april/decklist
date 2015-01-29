@@ -423,8 +423,7 @@ function validateInput() {
 	}
 	if ($("#eventdate").val() === "") {
 		validate.eventdate.push({"warning": "blank"});
-	}
-	if (!$("#eventdate").val().match(/^\d{4}\-\d{2}\-\d{2}$/)) {
+	} else if (!$("#eventdate").val().match(/^\d{4}\-\d{2}\-\d{2}$/)) {
 		validate.eventdate.push({"error": "unrecognized"});
 	}
 	if ($("#eventlocation").val() === "") {	
