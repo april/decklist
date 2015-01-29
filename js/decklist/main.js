@@ -563,7 +563,7 @@ function statusAndTooltips(valid) {
 	}
 	
 	// check if all fields are empty; if so, set errorlevel to indicate that
-	// additionally, clear their titles and classes so new tooltips can be set
+	// also clear titles and classes so new tooltips can be set
 	allempty = true;
 	$(".left input, .left textarea").each(function() {
 		if ($(this).val()) {
