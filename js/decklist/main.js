@@ -401,13 +401,13 @@ function validateInput() {
 	// check first/last name (nonblank)
 	if ($("#firstname").val() === "") {
 		validate.firstname.push({"warning": "blank"});
-	} else if ($("firstname").val().length > 15) {
-		validate.firstname.push({"error": "size"});
+	} else if ($("#firstname").val().length > 20) {
+		validate.firstname.push({"error": "toolarge"});
 	}
 	if ($("#lastname").val() === "") {
 		validate.lastname.push({"warning": "blank"});
-	} else if ($("lastname").val().length > 15) {
-		validate.lastname.push({"error": "size"});
+	} else if ($("#lastname").val().length > 20) {
+		validate.lastname.push({"error": "toolarge"});
 	}
 	
 	// check DCI number (nonblank, numeric, < 11 digits)
@@ -526,13 +526,13 @@ function statusAndTooltips(valid) {
 			if (prop === "firstname") {
 				if (validationobject["warning"] === "blank") {
 					notifications.push(["You should enter your first name.", "firstname", "warning"]);
-				} else if (validationobject["error"] === "size") {
+				} else if (validationobject["error"] === "toolarge") {
 					notifications.push(["Long names break the PDF layout.", "firstname", "error"]);
 				}
 			} else if (prop === "lastname") {
 				if (validationobject["warning"] === "blank") {
 					notifications.push(["You should enter your last name.", "lastname", "warning"]);
-				} else if (validationobject["error"] === "size") {
+				} else if (validationobject["error"] === "toolarge") {
 					notifications.push(["Long names break the PDF layout.", "lastname", "error"]);
 				}
 			} else if (prop === "dcinumber") {
