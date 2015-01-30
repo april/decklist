@@ -378,9 +378,6 @@ function generateDecklistPDF(outputtype) {
 function validateInput() {
 	/*
 		TODO:
-			Verify names are not too long
-				looks like ~14 "m" characters starts to reach the limit
-			Verify date is future-set
 
 	*/
 	
@@ -404,9 +401,13 @@ function validateInput() {
 	// check first/last name (nonblank)
 	if ($("#firstname").val() === "") {
 		validate.firstname.push({"warning": "blank"});
+	} else if ($("firstname").val().length > 15) {
+		validate.firstname.push({"error": "size"});
 	}
 	if ($("#lastname").val() === "") {
 		validate.lastname.push({"warning": "blank"});
+	} else if ($("lastname").val().length > 15) {
+		validate.lastname.push({"error": "size"});
 	}
 	
 	// check DCI number (nonblank, numeric, < 11 digits)
@@ -525,10 +526,14 @@ function statusAndTooltips(valid) {
 			if (prop === "firstname") {
 				if (validationobject["warning"] === "blank") {
 					notifications.push(["You should enter your first name.", "firstname", "warning"]);
+				} else if (validationobject["error"] === "size") {
+					notifications.push(["Long names break the PDF layout.", "firstname", "error"]);
 				}
 			} else if (prop === "lastname") {
 				if (validationobject["warning"] === "blank") {
 					notifications.push(["You should enter your last name.", "lastname", "warning"]);
+				} else if (validationobject["error"] === "size") {
+					notifications.push(["Long names break the PDF layout.", "lastname", "error"]);
 				}
 			} else if (prop === "dcinumber") {
 				if (validationobject["warning"] === "blank") {
