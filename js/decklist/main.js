@@ -389,7 +389,7 @@ function validateInput() {
 	// value = array of error objects: {error_level: error_type}
 	// error levels include "warning" and "error"
 	// error types include "blank", "nonnum", "toolarge", "toosmall",
-	//       "size", "unrecognized", "quantity"
+	//       "size", "unrecognized", "quantity", "futuredate"
 	validate = {
 		"firstname": [],
 		"lastname": [],
@@ -427,6 +427,8 @@ function validateInput() {
 		validate.eventdate.push({"warning": "blank"});
 	} else if (!$("#eventdate").val().match(/^\d{4}\-\d{2}\-\d{2}$/)) {
 		validate.eventdate.push({"error": "unrecognized"});
+	} else if ((Date.parse($("#eventdate").val()) - Date.now()) < 0) {
+		validate.eventdate.push({"warning": "futuredate"});
 	}
 	if ($("#eventlocation").val() === "") {	
 		validate.eventlocation.push({"warning": "blank"});
@@ -543,6 +545,8 @@ function statusAndTooltips(valid) {
 			} else if (prop === "eventdate") {
 				if (validationobject["warning"] === "blank") {
 					notifications.push(["You should enter the event date.", "eventdate", "warning"]);
+				} else if (validationobject["warning"] === "futuredate") {
+					notifications.push(["This date is not future-set.", "eventdate", "warning"]);
 				} else if (validationobject["error"] === "unrecognized") {
 					notifications.push(["Event dates should be in the following format: YYYY-MM-DD.", "eventdate", "error"]);
 				}
