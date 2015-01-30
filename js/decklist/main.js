@@ -314,6 +314,8 @@ function generateDecklistPDF(outputtype) {
 		dcinumber = validateDCI($("#dcinumber").val());
 	*/
 	
+	dcinumber = $("#dcinumber").val();
+	
 	// put the DCI number into the PDF	
 	y = 372;
 	if (dcinumber.length > 0) {
