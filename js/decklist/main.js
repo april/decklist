@@ -463,7 +463,7 @@ function validateInput() {
 		}
 	}
 	if (fourOrLess === false) {
-		validate.deckmain.push({"warning": "quantity"});
+		validate.deckmain.push({"error": "quantity"});
 	}
 	if (unrecognized.length !== 0) {
 		unrecognizedCards = unrecognized
@@ -523,6 +523,8 @@ function statusAndTooltips(valid) {
 			// 
 			// note: this section runs only once per validation object, so all checks
 			// can be run in else-if blocks; only one update is made per object
+			
+			// TODO: abstract error level (reference validationobject or errorlevel?)
 			if (prop === "firstname") {
 				if (validationobject["warning"] === "blank") {
 					notifications.push(["You should enter your first name.", "firstname", "warning"]);
@@ -564,9 +566,9 @@ function statusAndTooltips(valid) {
 					notifications.push(["Most decks consist of exactly 60 cards.", "deckmain", "warning"]);
 				} else if (validationobject["error"] === "toolarge") {
 					notifications.push(["This PDF only has space for up to 44 unique cards.", "deckmain", "error"]);
-				} else if (validationobject["warning"] === "quantity") {
+				} else if (validationobject["error"] === "quantity") {
 					excessCardsHtml = "<ul><li>" + excessCards.join("</li><li>") + "</li></ul>";
-					notifications.push(["The following cards exceed 4 copies across the maindeck and sideboard:" + excessCardsHtml, "deckmain", "warning"]);
+					notifications.push(["The following cards exceed 4 copies across the maindeck and sideboard:" + excessCardsHtml, "deckmain", "error"]);
 				} else if (validationobject["warning"] === "unrecognized") {
 					// TODO: make sure unrecognized cards are listed
 					// current status: only unparseable lines are listed,
