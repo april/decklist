@@ -12,10 +12,9 @@ function parseDecklist() {
 	maindeck_count = 0;
 	sideboard_count = 0;
 	
-	// Track unrecognized cards
+	// Track unrecognized cards and lines that can't be parsed.
+	// (encoded to prevent XSS)
 	unrecognized = [];
-	
-	// Track lines that could not be parsed. (encoded to prevent XSS)
 	unparseable = [];
 	
 	
