@@ -456,20 +456,26 @@ function validateInput() {
 
 	// check combined main/sb (quantity of each unique card, unrecognized cards)
 	mainPlusSide = mainAndSide();
-	fourOrLess = true;
 	excessCards = [];
-	unrecognizedCards = [];
+	allowedDupes = ["Plains", "Island", "Swamp", "Mountain", "Forest",
+		"Snow-Covered Plains", "Snow-Covered Island", "Snow-Covered Swamp", "Snow-Covered Mountain",
+		"Snow-Covered Forest", "Relentless Rats", "Shadowborn Apostle"];
 	for (i = 0; i < mainPlusSide.length; i++) {
 		if (parseInt(mainPlusSide[i][1]) > 4) {
 			// TODO: add checks for basic lands, relentless rats, shadowborn apostle
-			fourOrLess = false;
-			excessCards.push(mainPlusSide[i][0]);
+			allowed = false;
+			allowedDupes.forEach(function(element, index, array){
+				// note: case insensitive compare; may be able to do direct compare if case matches database
+				allowed = allowed || (element.toLowerCase() === mainPlusSide[i][0].toLowerCase());
+			});
+			if (!allowed) { excessCards.push(mainPlusSide[i][0]); }
 		}
 	}
-	if (fourOrLess === false) {
+	if (excessCards.length) {
 		validate.deckmain.push({"error": "quantity"});
 	}
 	
+	unrecognizedCards = [];
 	if (unrecognized.length !== 0) {
 		unrecognizedCards = unrecognized;
 		validate.deckmain.push({"warning": "unrecognized"});
