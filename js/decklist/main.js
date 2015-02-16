@@ -430,7 +430,7 @@ function validateInput() {
 		validate.eventdate.push({"error": "unrecognized"});
 
 	// if the event date is before today
-	} else if (Date.parse($("#eventdate").val()) <
+	} else if (Date.parse($("#eventdate").val()) <=
 		new Date(new Date().setDate(new Date().getDate()-1)).setHours(0))
 	{
 		validate.eventdate.push({"warning": "futuredate"});
