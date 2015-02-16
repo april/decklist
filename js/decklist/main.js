@@ -462,7 +462,6 @@ function validateInput() {
 		"Snow-Covered Forest", "Relentless Rats", "Shadowborn Apostle"];
 	for (i = 0; i < mainPlusSide.length; i++) {
 		if (parseInt(mainPlusSide[i][1]) > 4) {
-			// TODO: add checks for basic lands, relentless rats, shadowborn apostle
 			allowed = false;
 			allowedDupes.forEach(function(element, index, array){
 				// note: case insensitive compare; may be able to do direct compare if case matches database
