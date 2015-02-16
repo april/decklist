@@ -428,7 +428,11 @@ function validateInput() {
 		validate.eventdate.push({"warning": "blank"});
 	} else if (!$("#eventdate").val().match(/^\d{4}\-\d{2}\-\d{2}$/)) {
 		validate.eventdate.push({"error": "unrecognized"});
-	} else if ((Date.parse($("#eventdate").val()) - Date.now()) < 0) {
+
+	// if the event date is before today
+	} else if (Date.parse($("#eventdate").val()) <
+		new Date(new Date().setDate(new Date().getDate()-1)).setHours(0))
+	{
 		validate.eventdate.push({"warning": "futuredate"});
 	}
 	if ($("#eventlocation").val() === "") {	
