@@ -12,8 +12,11 @@ function parseDecklist() {
 	maindeck_count = 0;
 	sideboard_count = 0;
 	
-	// Track unrecognized lines. (encoded to prevent XSS)
+	// Track unrecognized cards
 	unrecognized = [];
+	
+	// Track lines that could not be parsed. (encoded to prevent XSS)
+	unparseable = [];
 	
 	
 	// Stop processing the function if there's no main deck
@@ -74,11 +77,12 @@ function parseDecklist() {
 		// If we see "Sideboard:", then we're in the TappedOut style sideboard entries from now on
 		else if (tosb_re.test(deckmain[i])) { in_sb = true; }
 		
-		// Unrecognized, store in appropriate array
+		// Could not be parsed, store in appropriate array
 		else {
 			// only store if it's not a falsey value (empty string, etc.)
-			if(htmlEncode(deckmain[i])){
-				unrecognized.push(htmlEncode(deckmain[i]));
+			// or entirely composed of whitespace
+			if (htmlEncode(deckmain[i]) && !htmlEncode(deckmain[i]).match(/^\s+$/)) {
+				unparseable.push(htmlEncode(deckmain[i]));
 			}
 		}
 	}
@@ -274,5 +278,5 @@ function list_add(type, card, quantity) {
 }
 
 function htmlEncode(string) {
-	return string.replace('&', '&amp;').replace('"', '&quot;').replace("'", '&#39;').replace('<', '&lt;').replace('>', '&gt;');
+	return string.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }

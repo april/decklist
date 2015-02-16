@@ -469,9 +469,14 @@ function validateInput() {
 	if (fourOrLess === false) {
 		validate.deckmain.push({"error": "quantity"});
 	}
+	
 	if (unrecognized.length !== 0) {
-		unrecognizedCards = unrecognized
+		unrecognizedCards = unrecognized;
 		validate.deckmain.push({"warning": "unrecognized"});
+	}
+	if (unparseable.length !== 0) {
+		unparseableCards = unparseable;
+		validate.deckmain.push({"warning": "unparseable"});
 	}
 	
 	// pass validation data to output status/tooltip information
@@ -579,7 +584,10 @@ function statusAndTooltips(valid) {
 					//   unrecognized cards are still listed normally - need to
 					//   cross-check against cards database
 					unrecognizedCardsHtml = "<ul><li>" + unrecognizedCards.join("</li><li>") + "</li></ul>";
-					notifications.push(["The following lines could not be parsed as Magic: The Gathering cards:" + unrecognizedCardsHtml, "deckmain", "warning"]);
+					notifications.push(["We could not find the following card names in our database:" + unrecognizedCardsHtml, "deckmain", "warning"]);
+				} else if (validationobject["warning"] === "unparseable") {
+					unparseableCardsHtml = "<ul><li>" + unparseableCards.join("</li><li>") + "</li></ul>";
+					notifications.push(["We couldn't parse the following lines:" + unparseableCardsHtml, "deckmain", "warning"]);
 				}
 			} else if (prop === "deckside") {
 				if (validationobject["warning"] === "toosmall") {
