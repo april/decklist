@@ -3,10 +3,8 @@ var keyupTimeout = null; // global timeout filter
 // When the page loads, generate a blank deck list preview
 $(document).ready(function() {
 	// bind events to all the input fields on the left side, to generate a PDF on change
-	$("div.left input").keyup(keyupBlock);
-	$("div.left textarea").keyup(keyupBlock);
-	$("#eventdate").change(keyupBlock);
-	$("input[type='radio']").change(keyupBlock);  // sort order
+	$("div.left input, div.left textarea").on("input", keyupBlock);
+	$("#eventdate, input[type='radio']").change(keyupBlock);
 
 	// bind a date picker to the event date (thanks, jQuery UI)
 	// also skin the upload and download button
@@ -24,7 +22,7 @@ $(document).ready(function() {
 
 // A function that blocks updates to the PDF unless 1000 milliseconds has past since changes
 function keyupBlock() {
-		if (keyupTimeout != null) { clearTimeout(keyupTimeout); }
+		if (keyupTimeout) { clearTimeout(keyupTimeout); }
 		keyupTimeout = setTimeout(generateDecklistPDF, 1000);
 }
 
