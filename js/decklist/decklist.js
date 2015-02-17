@@ -305,15 +305,36 @@ function sortDecklist(deck, sortorder) {
 }
 
 // Stub to simplify updating deck and sideboard counts
+// Adds a new entry for unique entries, increments existing entries for duplicates
 function list_add(type, card, quantity) {
-	/* TODO: check main/side for existing copies, add to those */
-	
-	/* else */ if (type === "main") {
-		maindeck.push([card, quantity]);
-		maindeck_count += parseInt(quantity);
+	if (type === "main") {
+		cardIndex = listContainsCard(maindeck,card);
+		if (cardIndex !== -1) {
+			// arggh, strings!
+			maindeck[cardIndex][1] = parseInt(maindeck[cardIndex][1]) + parseInt(quantity) + "";
+		} else {
+			maindeck.push([card, quantity]);
+			maindeck_count += parseInt(quantity);
+		}
 	} else if (type === "side") {
-		sideboard.push([card, quantity]);
-		sideboard_count += parseInt(quantity);
+		cardIndex = listContainsCard(sideboard,card);
+		if (cardIndex !== -1) {
+			// arggh, strings!
+			sideboard[cardIndex][1] = parseInt(sideboard[cardIndex][1]) + parseInt(quantity) + "";
+		} else {
+			sideboard.push([card, quantity]);
+			sideboard_count += parseInt(quantity);
+		}
+	}
+	
+	// Returns the index of the card:quantity pair within the given list, or -1 if not found
+	function listContainsCard(list, card) {
+		for (j=0; j < list.length; j++) {
+			if (list[j][0] === card) {
+				return j;
+			}
+		}
+		return -1;
 	}
 }
 
