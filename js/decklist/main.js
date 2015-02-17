@@ -474,8 +474,9 @@ function validateInput() {
 		validate.deckmain.push({"error": "quantity"});
 	}
 	
-	unrecognizedCards = [];
-	if (unrecognized.length !== 0) {
+	unrecognizedCards = {};
+	unparseableCards = [];
+	if (Object.getOwnPropertyNames(unrecognized).length !== 0) {
 		unrecognizedCards = unrecognized;
 		validate.deckmain.push({"warning": "unrecognized"});
 	}
@@ -584,11 +585,7 @@ function statusAndTooltips(valid) {
 					excessCardsHtml = "<ul><li>" + excessCards.join("</li><li>") + "</li></ul>";
 					notifications.push(["The following cards exceed 4 copies across the maindeck and sideboard:" + excessCardsHtml, "deckmain", "error"]);
 				} else if (validationobject["warning"] === "unrecognized") {
-					// TODO: make sure unrecognized cards are listed
-					// current status: only unparseable lines are listed,
-					//   unrecognized cards are still listed normally - need to
-					//   cross-check against cards database
-					unrecognizedCardsHtml = "<ul><li>" + unrecognizedCards.join("</li><li>") + "</li></ul>";
+					unrecognizedCardsHtml = "<ul><li>" + Object.getOwnPropertyNames(unrecognizedCards).join("</li><li>") + "</li></ul>";
 					notifications.push(["We could not find the following card names in our database:" + unrecognizedCardsHtml, "deckmain", "warning"]);
 				} else if (validationobject["warning"] === "unparseable") {
 					unparseableCardsHtml = "<ul><li>" + unparseableCards.join("</li><li>") + "</li></ul>";

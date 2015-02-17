@@ -14,7 +14,7 @@ function parseDecklist() {
 	
 	// Track unrecognized cards and lines that can't be parsed.
 	// (encoded to prevent XSS)
-	unrecognized = [];
+	unrecognized = {};
 	unparseable = [];
 	
 	
@@ -36,13 +36,12 @@ function parseDecklist() {
 	// Loop through all the cards in the main deck field
 	in_sb = false;
 	for (i = 0; i < deckmain.length; i++) {
-
 		// Parse for Magic Workstation style deck
 		if (mws_re.exec(deckmain[i]) != null) {
 			quantity = mws_re.exec(deckmain[i])[1];
 			card = mws_re.exec(deckmain[i])[2];
 
-			list_add("main", card, quantity);
+			recognizeCard(card, quantity);
 		}
 
 		// Parse for Magic Workstation sideboards
@@ -50,7 +49,7 @@ function parseDecklist() {
 			quantity = mwssb_re.exec(deckmain[i])[1];
 			card = mwssb_re.exec(deckmain[i])[2];
 
-			list_add("side", card, quantity);
+			recognizeCard(card, quantity, "side");
 		}
 
 		// Parse for MTGO/TappedOut style decks
@@ -59,9 +58,9 @@ function parseDecklist() {
 			card = mtgo_re.exec(deckmain[i])[2];
 
 			if (in_sb) {	// TappedOut style Sideboard listing
-				list_add("side", card, quantity);
+				recognizeCard(card, quantity, "side");
 			} else {
-				list_add("main", card, quantity);
+				recognizeCard(card, quantity);
 			}
 		}
 
@@ -70,7 +69,7 @@ function parseDecklist() {
 			quantity = mtgosb_re.exec(deckmain[i])[1];
 			card = mtgosb_re.exec(deckmain[i])[2];
 
-			list_add("side", card, quantity);
+			recognizeCard(card, quantity, "side");
 		}
 
 		// If we see "Sideboard:", then we're in the TappedOut style sideboard entries from now on
@@ -78,11 +77,7 @@ function parseDecklist() {
 		
 		// Could not be parsed, store in appropriate array
 		else {
-			// only store if it's not a falsey value (empty string, etc.)
-			// or entirely composed of whitespace
-			if (htmlEncode(deckmain[i]) && !htmlEncode(deckmain[i]).match(/^\s+$/)) {
-				unparseable.push(htmlEncode(deckmain[i]));
-			}
+			addUnparseable(deckmain[i]);
 		}
 	}
 
@@ -93,7 +88,10 @@ function parseDecklist() {
 			quantity = mtgo_re.exec(deckside[i])[1];
 			card = mtgo_re.exec(deckside[i])[2];
 
-			list_add("side", card, quantity);
+			recognizeCard(card, quantity, "side");
+		} else {
+			// Could not be parsed, store in appropriate array
+			addUnparseable(deckside[i]);
 		}
 	}
 
@@ -113,7 +111,48 @@ function parseDecklist() {
 	else if ( $("#sortorderfloat input[name=sortorder]:checked").prop("id") == "sortorder4" ) { // numeric
 		maindeck = sortDecklist(maindeck, 'numerically');
 		sideboard = sortDecklist(sideboard, 'alphabetically');
-	}	
+	}
+
+	// Check the card name against the card database. If it exists, add it to the
+	// appropriate list (main or side), otherwise add it to the unrecognized map.
+	function recognizeCard (card, quantity, list) {
+		list = list || "main";
+		recognized = objectHasPropertyCI(cards, card);
+		if (recognized) {
+			list_add(list, recognized, quantity);
+		} else {
+			// if the card name starts with "ae", try using the æ character instead
+			if (card.slice(0,2).toLowerCase() === "ae") {
+				recognized = objectHasPropertyCI(cards, "\u00e6"+card.slice(2));
+				if (recognized) {
+					list_add(list, recognized, quantity);
+					return;
+				}
+			}
+			unrecognized[htmlEncode(card)] = 1;
+		}
+	}
+	
+	// add the passed string to the unparseable array if it isn't empty or entirely whitespace
+	function addUnparseable(line) {
+		// only store if it's not a falsey value (empty string, etc.)
+		// or entirely composed of whitespace
+		if (htmlEncode(line) && !htmlEncode(line).match(/^\s+$/)) {
+			unparseable.push(htmlEncode(line));
+		}
+	}
+
+	// Case-insensitive property search, modified from:
+	// http://stackoverflow.com/a/12484507/540162
+	// Returns property value (properly-capitalized card name) if found, false otherwise
+	function objectHasPropertyCI(obj, val) {
+		for (var p in obj) {
+			if (obj.hasOwnProperty(p) && p.toLowerCase() === val.toLowerCase()) {
+				return p;
+			}
+		}
+		return false;
+	}
 }
 
 function sortDecklist(deck, sortorder) {
@@ -267,7 +306,9 @@ function sortDecklist(deck, sortorder) {
 
 // Stub to simplify updating deck and sideboard counts
 function list_add(type, card, quantity) {
-	if (type === "main") {
+	/* TODO: check main/side for existing copies, add to those */
+	
+	/* else */ if (type === "main") {
 		maindeck.push([card, quantity]);
 		maindeck_count += parseInt(quantity);
 	} else if (type === "side") {
