@@ -320,7 +320,7 @@ function generateDecklistPDF(outputtype) {
 			// Ignore zero quantity entries (blank)
 			if (maindeck[i][1] != 0) {
 				dl.text(maindeck[i][1], x, y);
-				dl.text(maindeck[i][0].capitalize(), x + 38, y);
+				dl.text(maindeck[i][0], x + 38, y);
 			}
 
 			y = y + 18;  // move to the next row
@@ -334,7 +334,7 @@ function generateDecklistPDF(outputtype) {
 		for (i = 0; i < sideboard.length; i++) {
 
 			dl.text(sideboard[i][1], x, y);
-			dl.text(sideboard[i][0].capitalize(), x + 38, y);
+			dl.text(sideboard[i][0], x + 38, y);
 			y = y + 18;  // move to the next row
 		}
 	}
