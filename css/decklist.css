@@ -135,8 +135,12 @@ h2 {
 	text-align: center;
 }
 
-#download {
+#download, #upload {
 	margin-top: 10px;
+}
+
+#upload, #formupload {
+	display: none;
 }
 
 .status {

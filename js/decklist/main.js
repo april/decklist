@@ -9,9 +9,10 @@ $(document).ready(function() {
 	$("input[type='radio']").change(keyupBlock);  // sort order
 
 	// bind a date picker to the event date (thanks, jQuery UI)
-	// also skin the download button
+	// also skin the upload and download button
 	$("#eventdate").datepicker({ dateFormat: "yy-mm-dd" }); // ISO-8601, woohoo
 	$("#download").button();
+	$("#upload").button();
 	$("#sortorderfloat").buttonset();
 	
 	// initialize field tooltips, replace | with <br> in tooltip content
@@ -63,7 +64,7 @@ String.prototype.capitalize = function() {
 
 // Parse the GET attributes, locking out fields as needed
 function parseGET() {
-	var params = ["event", "eventdate", "eventlocation", "deckmain", "deckside"];
+	var params = ["firstname", "lastname", "dcinumber", "event", "eventdate", "eventlocation", "deckmain", "deckside"];
 
 	// check for event, eventdate, or eventlocation and lock down those input fields
 	for (var i = 0; i < params.length; i++) {
@@ -95,6 +96,11 @@ function parseGET() {
 
 			document.getElementsByTagName("head")[0].appendChild(element);
 		}
+	}
+
+	// make the upload button visible, if uploadURL exists
+	if ($._GET[ "uploadURL" ] != undefined) {
+		$("#upload").css("display", "inline-block");
 	}
 }
 
@@ -129,6 +135,7 @@ function generateDecklistLayout() {
 	dl.rect(135, 78, 441, 24);  // location + deck name
 	dl.rect(355, 54, 221, 72);  // event + deck name + deck designer
 	dl.rect(552, 30, 24, 24);   // first letter
+	dl.rect(445, 30, 55, 24);   // table number
 
 	dl.rect(27, 140, 24, 628);  // last name + first name + dci
 	dl.rect(27, 140, 24, 270);  // dci
@@ -180,6 +187,8 @@ function generateDecklistLayout() {
 
 	dl.setFontSize(7);
 	dl.setFontStyle('normal');
+	dl.text('Table', 421, 40);
+	dl.text('Number', 417, 48);
 	dl.text('First Letter of', 508, 40);
 	dl.text('Last Name', 516, 48);
 	dl.text('Date:', 169, 68);
@@ -368,7 +377,12 @@ function generateDecklistPDF(outputtype) {
 		domdl = dl.output('dataurlstring');
 
 		// Put the DOM into the live preview iframe
-		$('iframe').attr('src', domdl); }
+		$('iframe').attr('src', domdl);
+	}
+	else if (outputtype == 'raw') {
+		rawPDF = dl.output();
+		return(rawPDF);
+	}
 	else {
 		dl.save('decklist.pdf');
 	}
@@ -699,3 +713,18 @@ function validateDCI(dci) {
 	
 }
 */
+
+function uploadDecklistPDF() {
+	// generate the raw PDF data
+	rawPDF = generateDecklistPDF('raw');
+
+	// grab the URL to POST to, set the action on the form to said URL
+	uploadURL = $._GET[ "uploadURL" ];
+	$( "#formupload" ).attr("action", uploadURL);
+
+	// set the proper input value
+	$( "#decklistPDF").val(rawPDF);
+
+	// and make a POST, huzzah!
+	$( "#formupload" ).submit();
+}

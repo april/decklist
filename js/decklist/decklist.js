@@ -148,7 +148,7 @@ function parseDecklist() {
 	function objectHasPropertyCI(obj, val) {
 		for (var p in obj) {
 			if (obj.hasOwnProperty(p) && p.toLowerCase() === val.toLowerCase()) {
-				return p;
+				return obj[p].n;
 			}
 		}
 		return false;
@@ -217,10 +217,10 @@ function sortDecklist(deck, sortorder) {
 
 		}
 	
-		// We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd row
+		// We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd column
 		if (deck.length > 31) {
-			if (deck[32][1] == 0) {
-				deck.splice(32, 1);
+			if (deck[31][1] == 0) {
+				deck.splice(31, 1);
 			}
 		}
 	}
@@ -277,10 +277,10 @@ function sortDecklist(deck, sortorder) {
 
 		}
 	
-		// We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd row
+		// We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd column
 		if (deck.length > 31) {
-			if (deck[32][1] == 0) {
-				deck.splice(32, 1);
+			if (deck[31][1] == 0) {
+				deck.splice(31, 1);
 			}
 		}
 	}
@@ -297,6 +297,14 @@ function sortDecklist(deck, sortorder) {
 		
 		// After sorting is done, we can remove the lower case index
 		for (i = 0; i < deck.length; i++) { deck[i] = [ deck[i][2], deck[i][0] ] }
+	}
+
+	// Get the card's true English name (ignoring any particular capitalization that someone may have done)
+	for (i = 0; i < deck.length; i++) {
+		var lcard = deck[i][0].toLowerCase()
+		if (cards[ lcard ] != undefined) {
+			deck[i][0] = cards[ lcard ]['n']
+		}
 	}
 
 	// Return the deck
