@@ -201,6 +201,12 @@ function sortDecklist(deck, sortorder) {
 		// Sort each subcolor, then append them to the final array
 		deck = []
 		for (i = 0; i < color_to_cards_keys.length; i++) {
+			// Push a blank entry onto deck (to separate colors)
+			// unless the deck is empty
+			if (deck.length !== 0) {
+				deck.push(['', 0]);
+			}
+			
 			color = color_to_cards_keys[i];
 			
 			color_to_cards[ color ].sort();   // color_to_cards['A']
@@ -211,10 +217,6 @@ function sortDecklist(deck, sortorder) {
 
 				deck.push([card, quantity]);
 			}
-
-			// Push a blank entry onto deck (to separate colors)
-			deck.push(['', 0]);
-
 		}
 	
 		// We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd column
@@ -261,6 +263,12 @@ function sortDecklist(deck, sortorder) {
 		// Sort each CMC, then append them to the final array
 		deck = []
 		for (i = 0; i < cmc_to_cards_keys.length; i++) {
+			// Push a blank entry onto deck (to separate CMCs)
+			// unless the deck is empty
+			if (deck.length !== 0) {
+				deck.push(['', 0]);
+			}
+			
 			cmc = cmc_to_cards_keys[i];
 			
 			cmc_to_cards[ cmc ].sort();   // cmc_to_cards[3]
@@ -271,10 +279,6 @@ function sortDecklist(deck, sortorder) {
 
 				deck.push([card, quantity]);
 			}
-
-			// Push a blank entry onto deck (to separate CMCs)
-			deck.push(['', 0]);
-
 		}
 	
 		// We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd column

@@ -315,14 +315,6 @@ function generateDecklistPDF(outputtype) {
 		dl.setFontSize(12);
 	}
 
-	/*
-	 * to implement later; needs further discussion
-	 
-		// TODO: implement, see validateDCI method
-		// validate DCI number
-		dcinumber = validateDCI($("#dcinumber").val());
-	*/
-	
 	dcinumber = $("#dcinumber").val();
 	
 	// put the DCI number into the PDF	
@@ -388,13 +380,10 @@ function generateDecklistPDF(outputtype) {
 	}
 }
 
-// TODO: comment
+// performs a number of checks against the values filled out in the fields
+// and stores any warnings or errors found during these checks within a
+// validation object which is used to generate tooltip and status box text
 function validateInput() {
-	/*
-		TODO:
-
-	*/
-	
 	// validation object
 	// key = HTML form object (input or textarea) ID
 	// value = array of error objects: {error_level: error_type}
@@ -478,8 +467,7 @@ function validateInput() {
 		if (parseInt(mainPlusSide[i][1]) > 4) {
 			allowed = false;
 			allowedDupes.forEach(function(element, index, array){
-				// note: case insensitive compare; may be able to do direct compare if case matches database
-				allowed = allowed || (element.toLowerCase() === mainPlusSide[i][0].toLowerCase());
+				allowed = allowed || element === mainPlusSide[i][0];
 			});
 			if (!allowed) { excessCards.push(mainPlusSide[i][0]); }
 		}
@@ -503,7 +491,8 @@ function validateInput() {
 	statusAndTooltips(validate);
 }
 
-// returns an array combining the main and sideboards
+// returns an array that is a combination of the main and sideboards
+// note: does not duplicate entries found in both arrays; combines them instead
 function mainAndSide() {
 	// make deep copies by value of the maindeck and sideboard
 	combined = $.extend(true,[],maindeck);
@@ -534,185 +523,181 @@ function mainAndSide() {
 
 // Change tooltips and status box to reflect current errors/warnings (or lack thereof)
 function statusAndTooltips(valid) {
-	// status box update
-	// notifications are stored as [[message, for, level], ...]
-	// (for = input element id, level = "warning" or "error")
-	notifications = [];
-	errorlevel = 0; // 0x000 is valid, 0x001 is empty, 0x010 is warning, 0x100 is error
+	// notifications are stored as the following:
+	// notifications: {
+	//   for: [[message, level], [message, level], ...],
+	//   for: [[message, level], [message, level], ...],
+	//   ...
+	// }
+	// in this case, the key 'for' represents the input element id, and
+	// the value 'level' represents the string "warning" or "error"
+	notifications = {};
+	
+	// define push method for notifications
+	// accepts a key and an array (assumed [message, level] input)
+	// if the key does not exist, add [array], else push it to that key's array
+	notifications.push = function(key, array) {
+		if (typeof this[key] === "undefined") {
+			this[key] = [array];
+		} else {
+			this[key].push(array);
+		}
+	}
+
+	// 0x000 is valid, 0x001 is empty, 0x010 is warning, 0x100 is error
+	// default error level to 'valid'
+	errorLevel = 0;
 	
 	// check for validation objects in every category (firstname, lastname, etc.)
-	for (prop in validate) {
-		proplength = validate[prop].length;
+	for (prop in valid) {
+		// check each instance of a warning/error per field
+		proplength = valid[prop].length;
 		for (i=0; i < proplength; i++) {
+			validationObject = valid[prop][i];
+
+			// store validation object type for abstraction
+			validType = (validationObject["warning"] ? "warning" : "error");
+			
 			// bitwise AND the current error level and that of the validation object
-			validationobject = validate[prop][i];
-			errorlevel = errorlevel | (validationobject["warning"] ? 0x010 : 0x100);
+			errorLevel = errorLevel | (validType === "warning" ? 0x010 : 0x100);
 			
 			// add notification message for the validation object
-			// 
-			// note: this section runs only once per validation object, so all checks
-			// can be run in else-if blocks; only one update is made per object
+			//   note: this section runs only once per validation object, so all checks
+			//   can be run in else-if blocks; only one update is made per object
 			
-			// TODO: abstract error level (reference validationobject or errorlevel?)
 			if (prop === "firstname") {
-				if (validationobject["warning"] === "blank") {
-					notifications.push(["You should enter your first name.", "firstname", "warning"]);
-				} else if (validationobject["error"] === "toolarge") {
-					notifications.push(["Long names break the PDF layout.", "firstname", "error"]);
+				if (validationObject["warning"] === "blank") {
+					notifications.push(prop, ["You should enter your first name.", validType]);
+				} else if (validationObject["error"] === "toolarge") {
+					notifications.push(prop, ["Long names break the PDF layout.", validType]);
 				}
 			} else if (prop === "lastname") {
-				if (validationobject["warning"] === "blank") {
-					notifications.push(["You should enter your last name.", "lastname", "warning"]);
-				} else if (validationobject["error"] === "toolarge") {
-					notifications.push(["Long names break the PDF layout.", "lastname", "error"]);
+				if (validationObject["warning"] === "blank") {
+					notifications.push(prop, ["You should enter your last name.", validType]);
+				} else if (validationObject["error"] === "toolarge") {
+					notifications.push(prop, ["Long names break the PDF layout.", validType]);
 				}
 			} else if (prop === "dcinumber") {
-				if (validationobject["warning"] === "blank") {
-					notifications.push(["You should enter your DCI number.", "dcinumber", "warning"]);
-				} else if (validationobject["error"] === "nonnum") {
-					notifications.push(["Your DCI number must only contain numbers.", "dcinumber", "error"]);
-				} else if (validationobject["error"] === "toolarge") {
-					notifications.push(["Your DCI number must be 10 digits or less.", "dcinumber", "error"]);
+				if (validationObject["warning"] === "blank") {
+					notifications.push(prop, ["You should enter your DCI number.", validType]);
+				} else if (validationObject["error"] === "nonnum") {
+					notifications.push(prop, ["Your DCI number must only contain numbers.", validType]);
+				} else if (validationObject["error"] === "toolarge") {
+					notifications.push(prop, ["Your DCI number must be 10 digits or less.", validType]);
 				}
 			} else if (prop === "event") {
-				if (validationobject["warning"] === "blank") {
-					notifications.push(["You should enter the event name.", "event", "warning"]);
+				if (validationObject["warning"] === "blank") {
+					notifications.push(prop, ["You should enter the event name.", validType]);
 				}
 			} else if (prop === "eventdate") {
-				if (validationobject["warning"] === "blank") {
-					notifications.push(["You should enter the event date.", "eventdate", "warning"]);
-				} else if (validationobject["warning"] === "futuredate") {
-					notifications.push(["This date is not future-set.", "eventdate", "warning"]);
-				} else if (validationobject["error"] === "unrecognized") {
-					notifications.push(["Event dates should be in the following format: YYYY-MM-DD.", "eventdate", "error"]);
+				if (validationObject["warning"] === "blank") {
+					notifications.push(prop, ["You should enter the event date.", validType]);
+				} else if (validationObject["warning"] === "futuredate") {
+					notifications.push(prop, ["This date is not future-set.", validType]);
+				} else if (validationObject["error"] === "unrecognized") {
+					notifications.push(prop, ["Event dates should be in the following format: YYYY-MM-DD.", validType]);
 				}
 			} else if (prop === "eventlocation") {
-				if (validationobject["warning"] === "blank") {
-					notifications.push(["You should enter the event location.", "eventlocation", "warning"]);
+				if (validationObject["warning"] === "blank") {
+					notifications.push(prop, ["You should enter the event location.", validType]);
 				}
 			} else if (prop === "deckmain") {
-				if (validationobject["warning"] === "size") {
-					notifications.push(["Most decks consist of exactly 60 cards.", "deckmain", "warning"]);
-				} else if (validationobject["error"] === "toolarge") {
-					notifications.push(["This PDF only has space for up to 44 unique cards.", "deckmain", "error"]);
-				} else if (validationobject["error"] === "quantity") {
+				if (validationObject["warning"] === "size") {
+					notifications.push(prop, ["Most decks consist of exactly 60 cards.", validType]);
+				} else if (validationObject["error"] === "toolarge") {
+					notifications.push(prop, ["This PDF only has space for up to 44 unique cards (including spaces).", validType]);
+				} else if (validationObject["error"] === "quantity") {
+					// include a list of cards that exceed 4 across the main/side
 					excessCardsHtml = "<ul><li>" + excessCards.join("</li><li>") + "</li></ul>";
-					notifications.push(["The following cards exceed 4 copies across the maindeck and sideboard:" + excessCardsHtml, "deckmain", "error"]);
-				} else if (validationobject["warning"] === "unrecognized") {
+					notifications.push(prop, ["The following cards exceed 4 copies across the maindeck and sideboard:" + excessCardsHtml, validType]);
+				} else if (validationObject["warning"] === "unrecognized") {
+					// include a list of unrecognized card names
 					unrecognizedCardsHtml = "<ul><li>" + Object.getOwnPropertyNames(unrecognizedCards).join("</li><li>") + "</li></ul>";
-					notifications.push(["We could not find the following card names in our database:" + unrecognizedCardsHtml, "deckmain", "warning"]);
-				} else if (validationobject["warning"] === "unparseable") {
+					notifications.push(prop, ["We could not find the following card names in our database:" + unrecognizedCardsHtml, validType]);
+				} else if (validationObject["warning"] === "unparseable") {
+					// include a list of unparseable lines
 					unparseableCardsHtml = "<ul><li>" + unparseableCards.join("</li><li>") + "</li></ul>";
-					notifications.push(["We couldn't parse the following lines:" + unparseableCardsHtml, "deckmain", "warning"]);
+					notifications.push(prop, ["We couldn't parse the following lines:" + unparseableCardsHtml, validType]);
 				}
 			} else if (prop === "deckside") {
-				if (validationobject["warning"] === "toosmall") {
-					notifications.push(["Most sideboards consist of exactly 15 cards.", "deckside", "warning"]);
-				} else if (validationobject["error"] === "toolarge") {
-					notifications.push(["Sideboards may not consist of more than 15 cards.", "deckside", "error"]);
+				if (validationObject["warning"] === "toosmall") {
+					notifications.push(prop, ["Most sideboards consist of exactly 15 cards.", validType]);
+				} else if (validationObject["error"] === "toolarge") {
+					notifications.push(prop, ["Sideboards may not consist of more than 15 cards.", validType]);
 				}
 			}
 		}
 	}
 	
-	// check if all fields are empty; if they are, set errorlevel accordingly
+	// check if all fields are empty; if they are, set errorLevel accordingly
 	// close active tooltips, clear titles and classes for new tooltip text
-	allempty = true;
+	allEmpty = true;
 	$(".left input, .left textarea").tooltip("close");
 	$(".left input, .left textarea").each(function() {
 		if ($(this).val()) {
-			allempty = false;
+			allEmpty = false;
 		}
 		$(this).prop("title", "");
 		$(this).removeClass("warning error");
 	});
-	if (allempty) {
-		errorlevel = 0x001;
+	if (allEmpty) {
+		errorLevel = 0x001;
 	}
 	
 	// compose new notifications HTML fragment, set new tooltips, and set input field classes
-	notificationshtml = "";
-	notificationslength = notifications.length;
-	for (i=0; i < notificationslength; i++) {
-		// create status box HTML fragment
-		notificationshtml += "<li class=\"" + notifications[i][2] + "\">";
-		notificationshtml += "<label for=\"" + notifications[i][1] + "\">";
-		notificationshtml += notifications[i][0] + "</label></li>";
-		
-		// update field tooltips and classes
-		fieldid = "#" + notifications[i][1];
-		$(fieldid).addClass(notifications[i][2]);
-		
-		// we need a new line only if the title isn't blank AND it doesn't end in HTML
-		// as all the HTML elements included are block elements
-		appendNewLine = !($(fieldid).prop("title") === "" || $(fieldid).prop("title").slice(-1) === ">");
-		
-		// append the new notification, prepended with a vertical bar if it
-		// requires a <br> to be inserted (bar is converted on the fly)
-		newtitle = $(fieldid).prop("title") + (appendNewLine ? "|" : "") + "&bull; " + notifications[i][0];
-		$(fieldid).prop("title", newtitle);
-	}
-	// TODO: rewrite this to use a new array for notification field text
-	// and replace this hacky method of fixing the problem
-	$(".left input, .left textarea").each(function() {
-		if ($(this).prop("title").indexOf("|") === -1 && $(this).prop("title").indexOf(">") === -1) {
-			newertitle = $(this).prop("title").slice(7);
-			$(this).prop("title", newertitle);
+	statusBoxHtml = "";
+	for (key in notifications) {
+		// exclude any functions of the object
+		if (typeof notifications[key] !== "function") {
+			newTitle = "";
+
+			notificationsLength = notifications[key].length;
+			fieldClass = "warning";
+			for (i=0; i < notificationsLength; i++) {
+				// create status box HTML fragment
+				statusBoxHtml += "<li class=\"" + notifications[key][i][1] + "\">";
+				statusBoxHtml += "<label for=\"" + key + "\">";
+				statusBoxHtml += notifications[key][i][0] + "</label></li>";
+
+				// determine field class
+				if (notifications[key][i][1] === "error") {
+					fieldClass = "error";
+				}
+
+				// construct field notification string
+				if (notificationsLength === 1) {
+					// don't add a bullet, there's only one line for this field
+					newTitle = notifications[key][0][0];
+				} else {
+					// don't add a newline denotator (vertical bar) for first entry
+					if (i !== 0) {
+						newTitle += "|";
+					}
+					newTitle += "&bull; " + notifications[key][i][0];
+				}
+			}
+
+			// update field class and title
+			fieldId = "#" + key;
+			$(fieldId).addClass(fieldClass);
+			$(fieldId).prop("title", newTitle);
 		}
-	});
+	}
 	
 	// compute new status
-	newstatus = "valid";
-	if (errorlevel & 0x100) {
-		newstatus = "error";
-	} else if (errorlevel & 0x010) {
-		newstatus = "warning";
-	} else if (errorlevel & 0x001) {
-		newstatus = "empty";
+	newStatus = "valid";
+	if (errorLevel & 0x100) {
+		newStatus = "error";
+	} else if (errorLevel & 0x010) {
+		newStatus = "warning";
+	} else if (errorLevel & 0x001) {
+		newStatus = "empty";
 	}
 	
 	// set new status, display new notifications
-	$(".status").removeClass("default empty valid warning error").addClass(newstatus);
-	$(".status .details").html(notificationshtml);
+	$(".status").removeClass("default empty valid warning error").addClass(newStatus);
+	$(".status .details").html(statusBoxHtml);
 }
-
-/*
- * to implement later; needs further discussion
- 
-function validateDCI(dci) {
-	return dci;
-	// TODO: implement DCI # checking / constructing
-	/*
-	
-	// The process for generating DCI numbers is:
-
-	// Prepend a zero
-	// Calculate check digit
-	// Prepend that check digit
-	// (and repeat until full length DCI number)
-
-	// -----------------------------------------------------
-
-    // var primes = [43, 47, 53, 71, 73, 31, 37, 41, 59, 61, 67, 29]
-    // var dcinumber = "1076753660"
-     
-    // var sum   = 0
-    // var cdsum = 0
-    // for (i = 0; i < dcinumber.length-1; i++){
-        // sum += parseInt(dcinumber[i+1])*primes[i]
-    // }
-    // for (i = 0; i < dcinumber.length; i++){
-        // cdsum += parseInt(dcinumber[i])*primes[i]
-    // }
-     
-    // console.log("Next check digit would be " + (1 + Math.floor(cdsum / 10) % 9))
-     
-    // var valid = (1 + Math.floor(sum / 10) % 9) == parseInt(dcinumber[0])
-     
-    // console.log(valid)
-	
-}
-*/
 
 function uploadDecklistPDF() {
 	// generate the raw PDF data
