@@ -147,7 +147,7 @@ h2 {
 	border-width: 5px;
 	border-style: solid;
 	margin: 10px 0;
-	padding: 10px 30px;
+	padding: 10px 25px;
 	position: relative;
 }
 
@@ -171,68 +171,84 @@ h2 {
 	border-color: rgba(255, 0, 0, 0.3);
 }
 
-.status.empty:before {
-	content: "your decklist seems to be empty; try adding some cards?";
-	font-size: 12px;
-	font-style: italic;
-	position: absolute;
-		top: 4px;
-		left: 0;
-		right: 0;
-}
-
 .statusmark {
 	font-family: Arial, serif;
 	font-size: 60px;
 	font-weight: bold;
 	height: 80px;
-	margin: 5px;
+	margin: 10px;
 	text-shadow: grey 0 0 3px;
 }
 
-.default .statusmark:before, .empty .statusmark:before {
-	color: grey;
-	content: "?";
+.statusmark:before {
+	content: "";
+	display: block;
+	height: 80px;
+	margin: auto auto;
+	width: 80px;
 }
 
 .valid .statusmark:before {
-	color: green;
-	content: "\2714"; /* heavy checkmark */
+	background: url('../images/ok.png') center center / 80px no-repeat scroll;
 }
 
-.warning .statusmark:before {
-	color: #ffdc00;
-	content: "?";
+.default .statusmark:before, .empty .statusmark:before, .warning .statusmark:before {
+	background: url('../images/warning.png') center center / 80px no-repeat scroll;
 }
 
 .error .statusmark:before {
-	color: red;
-	content: "\2716"; /* heavy multiplication x */
+	background: url('../images/error.png') center center / 80px no-repeat scroll;
 }
 
 .status .details {
-	list-style-type: circle;
+	color: black;
+	list-style-type: disc;
 	margin-top: 0;
 	margin-bottom: 0;
+	padding-left: 20px;
 	text-align: left;
 }
 
 .details > li {
+	list-style-type: none;
+	margin-left: 25px;
+	margin-bottom: 1px;
+	position: relative;
 	transition: color 0.15s;
-}
-
-.details > li:hover {
-	color: inherit;
 }
 
 .details label {
 	cursor: pointer;
 }
 
-.details .warning {
-	color: orange;
+.details .warning label:before, .details .error label:before {
+	content: "";
+	display: block;
+	height: 20px;
+	overflow: visible;
+	position: absolute;
+		top: 0;
+		left: -25px;
+	width: 20px;
 }
 
-.details .error {
+.details .warning label:before {
+	background: url('../images/warning.png') center center / 20px no-repeat scroll;
+
+}
+
+.details .error label:before {
+	background: url('../images/error.png') center center / 20px no-repeat scroll;
+}
+
+.details .warning:hover {
+	color: darkgoldenrod;
+}
+
+.details .error:hover {
 	color: firebrick;
+}
+
+.details ul {
+	padding-left: 30px;
 }
