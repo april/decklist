@@ -322,8 +322,8 @@ function list_add(type, card, quantity) {
 			maindeck[cardIndex][1] = parseInt(maindeck[cardIndex][1]) + parseInt(quantity) + "";
 		} else {
 			maindeck.push([card, quantity]);
-			maindeck_count += parseInt(quantity);
 		}
+		maindeck_count += parseInt(quantity);
 	} else if (type === "side") {
 		cardIndex = listContainsCard(sideboard,card);
 		if (cardIndex !== -1) {
@@ -331,8 +331,8 @@ function list_add(type, card, quantity) {
 			sideboard[cardIndex][1] = parseInt(sideboard[cardIndex][1]) + parseInt(quantity) + "";
 		} else {
 			sideboard.push([card, quantity]);
-			sideboard_count += parseInt(quantity);
 		}
+		sideboard_count += parseInt(quantity);
 	}
 	
 	// Returns the index of the card:quantity pair within the given list, or -1 if not found
