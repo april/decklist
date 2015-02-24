@@ -69,6 +69,16 @@ h2 {
 	padding-left: 5px;
 }
 
+.left input.warning:hover, .left textarea.warning:hover,
+.left input.warning:focus, .left textarea.warning:focus {
+	border-color: #ffdc00;
+}
+
+.left input.error:hover, .left textarea.error:hover,
+.left input.error:focus, .left textarea.error:focus {
+	border-color: red;
+}
+
 .left input[disabled] {
 	opacity: 0.6;
 }
@@ -86,6 +96,19 @@ h2 {
 	margin-left: 20%;
 	margin-top: -15px;
 	margin-bottom: 10px;
+}
+
+.tooltip {
+	border: 2px solid #aaa;
+	box-shadow: 0 0 5px #aaa;
+	padding: 8px;
+	position: absolute;
+	z-index: 9999;
+}
+
+.tooltip ul {
+	margin-top: 0;
+	margin-bottom: 0;
 }
 
 .left label {
@@ -107,6 +130,11 @@ h2 {
 	font-size: 13px;
 }
 
+#sortorderfloat {
+	display: block;
+	text-align: center;
+}
+
 #download, #upload {
 	margin-top: 10px;
 }
@@ -115,9 +143,114 @@ h2 {
 	display: none;
 }
 
-#sortorderfloat {
+.status {
+	border-width: 5px;
+	border-style: solid;
+	margin: 10px 0;
+	padding: 10px 25px;
+	position: relative;
+}
+
+.status.default, .status.empty {
+	border-color: grey;
+	border-color: rgba(128, 128, 128, 0.3);
+}
+
+.status.valid {
+	border-color: green;
+	border-color: rgba(0, 125, 0, 0.3);
+}
+
+.status.warning {
+	border-color: #ffdc00;
+	border-color: rgba(255, 220, 0, 0.3);
+}
+
+.status.error {
+	border-color: red;
+	border-color: rgba(255, 0, 0, 0.3);
+}
+
+.statusmark {
+	font-family: Arial, serif;
+	font-size: 60px;
+	font-weight: bold;
+	height: 80px;
+	margin: 10px;
+	text-shadow: grey 0 0 3px;
+}
+
+.statusmark:before {
+	content: "";
 	display: block;
-	text-align: center;
+	height: 80px;
+	margin: auto auto;
+	width: 80px;
+}
+
+.valid .statusmark:before {
+	background: url('../images/ok.png') center center / 80px no-repeat scroll;
+}
+
+.default .statusmark:before, .empty .statusmark:before, .warning .statusmark:before {
+	background: url('../images/warning.png') center center / 80px no-repeat scroll;
+}
+
+.error .statusmark:before {
+	background: url('../images/error.png') center center / 80px no-repeat scroll;
+}
+
+.status .details {
+	color: black;
+	list-style-type: disc;
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-left: 20px;
+	text-align: left;
+}
+
+.details > li {
+	list-style-type: none;
+	margin-left: 25px;
+	margin-bottom: 1px;
+	position: relative;
+	transition: color 0.15s;
+}
+
+.details label {
+	cursor: pointer;
+}
+
+.details .warning label:before, .details .error label:before {
+	content: "";
+	display: block;
+	height: 20px;
+	overflow: visible;
+	position: absolute;
+		top: 0;
+		left: -25px;
+	width: 20px;
+}
+
+.details .warning label:before {
+	background: url('../images/warning.png') center center / 20px no-repeat scroll;
+
+}
+
+.details .error label:before {
+	background: url('../images/error.png') center center / 20px no-repeat scroll;
+}
+
+.details .warning:hover {
+	color: darkgoldenrod;
+}
+
+.details .error:hover {
+	color: firebrick;
+}
+
+.details ul {
+	padding-left: 30px;
 }
 
 #deckliststatuses {

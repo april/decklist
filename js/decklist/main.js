@@ -1,12 +1,10 @@
-var keyupTimeout = null; // global timeout filter
+var pdfChangeTimer = null; // global timeout filter
 
 // When the page loads, generate a blank deck list preview
 $(document).ready(function() {
 	// bind events to all the input fields on the left side, to generate a PDF on change
-	$("div.left input").keyup(keyupBlock);
-	$("div.left textarea").keyup(keyupBlock);
-	$("#eventdate").change(keyupBlock);
-	$("input[type='radio']").change(keyupBlock);  // sort order
+	$("div.left input, div.left textarea").on("input", pdfChangeWait);
+	$("#eventdate, input[type='radio']").change(pdfChangeWait);
 
 	// bind a date picker to the event date (thanks, jQuery UI)
 	// also skin the upload and download button
@@ -14,6 +12,19 @@ $(document).ready(function() {
 	$("#download").button();
 	$("#upload").button();
 	$("#sortorderfloat").buttonset();
+	
+	// initialize field tooltips, replace | with <br> in tooltip content
+	$(".left input, .left textarea").tooltip({
+		content: function(callback) {
+			callback($(this).prop("title").replace(/\|/g, "<br>"));
+		},
+		position: {
+			my: "right top+10",
+			at: "right bottom",
+			collision: "flipfit"
+		},
+		tooltipClass: "tooltip"
+	});
 
 	// detect browser PDF support
 	detectPDFPreviewSupport();
@@ -22,10 +33,10 @@ $(document).ready(function() {
 	parseGET();
 });
 
-// A function that blocks updates to the PDF unless 1000 milliseconds has past since changes
-function keyupBlock() {
-		if (keyupTimeout != null) { clearTimeout(keyupTimeout); }
-		keyupTimeout = setTimeout(generateDecklistPDF, 1000);
+// Blocks updates to the PDF unless 1000 milliseconds has past since last changec
+function pdfChangeWait() {
+		if (pdfChangeTimer) { clearTimeout(pdfChangeTimer); }
+		pdfChangeTimer = setTimeout(generateDecklistPDF, 1000);
 }
 
 // Good ol' Javascript, not having a capitalize function on string objects
@@ -240,7 +251,7 @@ function generateDecklistPDF(outputtype) {
 	outputtype = typeof outputtype !== 'undefined' ? outputtype : 'dataurlstring';
 
 	// clear the input timeout before we can generate the PDF
-	keyupTimeout = null;
+	pdfChangeTimer = null;
 
 	// don't generate the preview if showpreview == false
 	if ((outputtype == 'dataurlstring') && (showpreview == false)) {
@@ -250,6 +261,12 @@ function generateDecklistPDF(outputtype) {
 		
 	// start with the blank PDF
 	dl = generateDecklistLayout();
+	
+	// Attempt to parse the decklists
+	parseDecklist();
+
+	// input validation alerts
+	validateInput();
 
 	// Helvetica, fuck yeah
 	dl.setFont('helvetica');
@@ -296,8 +313,9 @@ function generateDecklistPDF(outputtype) {
 		dl.setFontSize(12);
 	}
 
-	// put the DCI number into the PDF
 	dcinumber = $("#dcinumber").val();
+	
+	// put the DCI number into the PDF	
 	y = 372;
 	if (dcinumber.length > 0) {
 		for (var i = 0; i < dcinumber.length; i++) {
@@ -305,9 +323,6 @@ function generateDecklistPDF(outputtype) {
 			y = y - 24;
 		}
 	}
-
-	// Attempt to parse the decklists
-	parseDecklist();
 
 	// Add the deck to the decklist
 	var x = 82;
@@ -320,7 +335,7 @@ function generateDecklistPDF(outputtype) {
 			// Ignore zero quantity entries (blank)
 			if (maindeck[i][1] != 0) {
 				dl.text(maindeck[i][1], x, y);
-				dl.text(maindeck[i][0].capitalize(), x + 38, y);
+				dl.text(maindeck[i][0], x + 38, y);
 			}
 
 			y = y + 18;  // move to the next row
@@ -334,7 +349,7 @@ function generateDecklistPDF(outputtype) {
 		for (i = 0; i < sideboard.length; i++) {
 
 			dl.text(sideboard[i][1], x, y);
-			dl.text(sideboard[i][0].capitalize(), x + 38, y);
+			dl.text(sideboard[i][0], x + 38, y);
 			y = y + 18;  // move to the next row
 		}
 	}
@@ -361,6 +376,325 @@ function generateDecklistPDF(outputtype) {
 	else {
 		dl.save('decklist.pdf');
 	}
+}
+
+// performs a number of checks against the values filled out in the fields
+// and stores any warnings or errors found during these checks within a
+// validation object which is used to generate tooltip and status box text
+function validateInput() {
+	// validation object
+	// key = HTML form object (input or textarea) ID
+	// value = array of error objects: {error_level: error_type}
+	// error levels include "warning" and "error"
+	// error types include "blank", "nonnum", "toolarge", "toosmall",
+	//       "size", "unrecognized", "quantity", "futuredate"
+	validate = {
+		"firstname": [],
+		"lastname": [],
+		"dcinumber": [],
+		"event": [],
+		"eventdate": [],
+		"eventlocation": [],
+		"deckmain": [],
+		"deckside": []
+	};
+	
+	// check first/last name (nonblank)
+	if ($("#firstname").val() === "") {
+		validate.firstname.push({"warning": "blank"});
+	} else if ($("#firstname").val().length > 20) {
+		validate.firstname.push({"error": "toolarge"});
+	}
+	if ($("#lastname").val() === "") {
+		validate.lastname.push({"warning": "blank"});
+	} else if ($("#lastname").val().length > 20) {
+		validate.lastname.push({"error": "toolarge"});
+	}
+	
+	// check DCI number (nonblank, numeric, < 11 digits)
+	if ($("#dcinumber").val() === "") {
+		validate.dcinumber.push({"warning": "blank"});
+	} else if (!$("#dcinumber").val().match(/^[\d]+$/)) {
+		validate.dcinumber.push({"error": "nonnum"});
+	}
+	if ($("#dcinumber").val().length >= 11) {
+		validate.dcinumber.push({"error": "toolarge"});
+	}
+	
+	// check event name, date, location (nonblank)
+	if ($("#event").val() === "") {
+		validate.event.push({"warning": "blank"});
+	}
+	if ($("#eventdate").val() === "") {
+		validate.eventdate.push({"warning": "blank"});
+	} else if (!$("#eventdate").val().match(/^\d{4}\-\d{2}\-\d{2}$/)) {
+		validate.eventdate.push({"error": "unrecognized"});
+
+	// if the event date is before today
+	} else if (Date.parse($("#eventdate").val()) <=
+		new Date(new Date().setDate(new Date().getDate()-1)).setHours(0))
+	{
+		validate.eventdate.push({"warning": "futuredate"});
+	}
+	if ($("#eventlocation").val() === "") {	
+		validate.eventlocation.push({"warning": "blank"});
+	}
+	
+	// check maindeck (size, number of unique cards)
+	// check sideboard (size)
+	if (maindeck_count != 60) {
+		validate.deckmain.push({"warning": "size"});
+	}
+	if (maindeck.length > 44) {
+		validate.deckmain.push({"error": "toolarge"});
+	}
+	if (sideboard_count > 15) {
+		validate.deckside.push({"error": "toolarge"});
+	}
+	if (sideboard_count < 15) {
+		validate.deckside.push({"warning": "toosmall"});
+	}
+
+	// check combined main/sb (quantity of each unique card, unrecognized cards)
+	mainPlusSide = mainAndSide();
+	excessCards = [];
+	allowedDupes = ["Plains", "Island", "Swamp", "Mountain", "Forest",
+		"Snow-Covered Plains", "Snow-Covered Island", "Snow-Covered Swamp", "Snow-Covered Mountain",
+		"Snow-Covered Forest", "Relentless Rats", "Shadowborn Apostle"];
+	for (i = 0; i < mainPlusSide.length; i++) {
+		if (parseInt(mainPlusSide[i][1]) > 4) {
+			allowed = false;
+			allowedDupes.forEach(function(element, index, array){
+				allowed = allowed || element === mainPlusSide[i][0];
+			});
+			if (!allowed) { excessCards.push(mainPlusSide[i][0]); }
+		}
+	}
+	if (excessCards.length) {
+		validate.deckmain.push({"error": "quantity"});
+	}
+	
+	unrecognizedCards = {};
+	unparseableCards = [];
+	if (Object.getOwnPropertyNames(unrecognized).length !== 0) {
+		unrecognizedCards = unrecognized;
+		validate.deckmain.push({"warning": "unrecognized"});
+	}
+	if (unparseable.length !== 0) {
+		unparseableCards = unparseable;
+		validate.deckmain.push({"warning": "unparseable"});
+	}
+	
+	// pass validation data to output status/tooltip information
+	statusAndTooltips(validate);
+}
+
+// returns an array that is a combination of the main and sideboards
+// note: does not duplicate entries found in both arrays; combines them instead
+function mainAndSide() {
+	// make deep copies by value of the maindeck and sideboard
+	combined = $.extend(true,[],maindeck);
+	sideQuants = $.extend(true,[],sideboard);
+	
+	// combine the cards!
+	combined.map(addSideQuants);
+	combined = combined.concat(sideQuants);
+	
+	return combined;
+	
+	// mapping function; adds quantities of identical names in main/side
+	// and removes those matching cards from sideQuants
+	function addSideQuants(element) {
+		foundSideElement = false;
+		for (i = 0; i < sideQuants.length && sideQuants.length && foundSideElement === false; i++) {
+			if (sideQuants[i][0] === element[0]) {
+				foundSideElement = i;
+			}
+		}
+		if (typeof foundSideElement === "number") {
+			element[1] = (parseInt(element[1]) + parseInt(sideQuants[foundSideElement][1])).toString();
+			sideQuants.splice(foundSideElement, 1);
+		}
+		return element;
+	}
+}
+
+// Change tooltips and status box to reflect current errors/warnings (or lack thereof)
+function statusAndTooltips(valid) {
+	// notifications are stored as the following:
+	// notifications: {
+	//   for: [[message, level], [message, level], ...],
+	//   for: [[message, level], [message, level], ...],
+	//   ...
+	// }
+	// in this case, the key 'for' represents the input element id, and
+	// the value 'level' represents the string "warning" or "error"
+	notifications = {};
+	
+	// define push method for notifications
+	// accepts a key and an array (assumed [message, level] input)
+	// if the key does not exist, add [array], else push it to that key's array
+	notifications.push = function(key, array) {
+		if (typeof this[key] === "undefined") {
+			this[key] = [array];
+		} else {
+			this[key].push(array);
+		}
+	}
+
+	// 0x000 is valid, 0x001 is empty, 0x010 is warning, 0x100 is error
+	// default error level to 'valid'
+	errorLevel = 0;
+	
+	// check for validation objects in every category (firstname, lastname, etc.)
+	for (prop in valid) {
+		// check each instance of a warning/error per field
+		proplength = valid[prop].length;
+		for (i=0; i < proplength; i++) {
+			validationObject = valid[prop][i];
+
+			// store validation object type for abstraction
+			validType = (validationObject["warning"] ? "warning" : "error");
+			
+			// bitwise AND the current error level and that of the validation object
+			errorLevel = errorLevel | (validType === "warning" ? 0x010 : 0x100);
+			
+			// add notification message for the validation object
+			//   note: this section runs only once per validation object, so all checks
+			//   can be run in else-if blocks; only one update is made per object
+			
+			if (prop === "firstname") {
+				if (validationObject["warning"] === "blank") {
+					notifications.push(prop, ["You should enter your first name.", validType]);
+				} else if (validationObject["error"] === "toolarge") {
+					notifications.push(prop, ["Long names break the PDF layout.", validType]);
+				}
+			} else if (prop === "lastname") {
+				if (validationObject["warning"] === "blank") {
+					notifications.push(prop, ["You should enter your last name.", validType]);
+				} else if (validationObject["error"] === "toolarge") {
+					notifications.push(prop, ["Long names break the PDF layout.", validType]);
+				}
+			} else if (prop === "dcinumber") {
+				if (validationObject["warning"] === "blank") {
+					notifications.push(prop, ["You should enter your DCI number.", validType]);
+				} else if (validationObject["error"] === "nonnum") {
+					notifications.push(prop, ["Your DCI number must only contain numbers.", validType]);
+				} else if (validationObject["error"] === "toolarge") {
+					notifications.push(prop, ["Your DCI number must be 10 digits or less.", validType]);
+				}
+			} else if (prop === "event") {
+				if (validationObject["warning"] === "blank") {
+					notifications.push(prop, ["You should enter the event name.", validType]);
+				}
+			} else if (prop === "eventdate") {
+				if (validationObject["warning"] === "blank") {
+					notifications.push(prop, ["You should enter the event date.", validType]);
+				} else if (validationObject["warning"] === "futuredate") {
+					notifications.push(prop, ["This date is not future-set.", validType]);
+				} else if (validationObject["error"] === "unrecognized") {
+					notifications.push(prop, ["Event dates should be in the following format: YYYY-MM-DD.", validType]);
+				}
+			} else if (prop === "eventlocation") {
+				if (validationObject["warning"] === "blank") {
+					notifications.push(prop, ["You should enter the event location.", validType]);
+				}
+			} else if (prop === "deckmain") {
+				if (validationObject["warning"] === "size") {
+					notifications.push(prop, ["Most decks consist of exactly 60 cards.", validType]);
+				} else if (validationObject["error"] === "toolarge") {
+					notifications.push(prop, ["This PDF only has space for up to 44 unique cards (including spaces).", validType]);
+				} else if (validationObject["error"] === "quantity") {
+					// include a list of cards that exceed 4 across the main/side
+					excessCardsHtml = "<ul><li>" + excessCards.join("</li><li>") + "</li></ul>";
+					notifications.push(prop, ["The following cards exceed 4 copies across the maindeck and sideboard:" + excessCardsHtml, validType]);
+				} else if (validationObject["warning"] === "unrecognized") {
+					// include a list of unrecognized card names
+					unrecognizedCardsHtml = "<ul><li>" + Object.getOwnPropertyNames(unrecognizedCards).join("</li><li>") + "</li></ul>";
+					notifications.push(prop, ["We could not find the following card names in our database:" + unrecognizedCardsHtml, validType]);
+				} else if (validationObject["warning"] === "unparseable") {
+					// include a list of unparseable lines
+					unparseableCardsHtml = "<ul><li>" + unparseableCards.join("</li><li>") + "</li></ul>";
+					notifications.push(prop, ["We couldn't parse the following lines:" + unparseableCardsHtml, validType]);
+				}
+			} else if (prop === "deckside") {
+				if (validationObject["warning"] === "toosmall") {
+					notifications.push(prop, ["Most sideboards consist of exactly 15 cards.", validType]);
+				} else if (validationObject["error"] === "toolarge") {
+					notifications.push(prop, ["Sideboards may not consist of more than 15 cards.", validType]);
+				}
+			}
+		}
+	}
+	
+	// check if all fields are empty; if they are, set errorLevel accordingly
+	// close active tooltips, clear titles and classes for new tooltip text
+	allEmpty = true;
+	$(".left input, .left textarea").tooltip("close");
+	$(".left input, .left textarea").each(function() {
+		if ($(this).val()) {
+			allEmpty = false;
+		}
+		$(this).prop("title", "");
+		$(this).removeClass("warning error");
+	});
+	if (allEmpty) {
+		errorLevel = 0x001;
+	}
+	
+	// compose new notifications HTML fragment, set new tooltips, and set input field classes
+	statusBoxHtml = "";
+	for (key in notifications) {
+		// exclude any functions of the object
+		if (typeof notifications[key] !== "function") {
+			newTitle = "";
+
+			notificationsLength = notifications[key].length;
+			fieldClass = "warning";
+			for (i=0; i < notificationsLength; i++) {
+				// create status box HTML fragment
+				statusBoxHtml += "<li class=\"" + notifications[key][i][1] + "\">";
+				statusBoxHtml += "<label for=\"" + key + "\">";
+				statusBoxHtml += notifications[key][i][0] + "</label></li>";
+
+				// determine field class
+				if (notifications[key][i][1] === "error") {
+					fieldClass = "error";
+				}
+
+				// construct field notification string
+				if (notificationsLength === 1) {
+					// don't add a bullet, there's only one line for this field
+					newTitle = notifications[key][0][0];
+				} else {
+					// don't add a newline denotator (vertical bar) for first entry
+					if (i !== 0) {
+						newTitle += "|";
+					}
+					newTitle += "&bull; " + notifications[key][i][0];
+				}
+			}
+
+			// update field class and title
+			fieldId = "#" + key;
+			$(fieldId).addClass(fieldClass);
+			$(fieldId).prop("title", newTitle);
+		}
+	}
+	
+	// compute new status
+	newStatus = "valid";
+	if (errorLevel & 0x100) {
+		newStatus = "error";
+	} else if (errorLevel & 0x010) {
+		newStatus = "warning";
+	} else if (errorLevel & 0x001) {
+		newStatus = "empty";
+	}
+	
+	// set new status, display new notifications
+	$(".status").removeClass("default empty valid warning error").addClass(newStatus);
+	$(".status .details").html(statusBoxHtml);
 }
 
 function uploadDecklistPDF() {
