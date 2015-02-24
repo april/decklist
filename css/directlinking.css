@@ -1,0 +1,17 @@
+/* page layout */
+body {
+	color: #222;
+	padding: 0 2em;
+}
+
+.exampleurl {
+	background-color: #EEEEEE;
+	border: solid 1px #222;
+	padding: .35em .5em;
+	width: 90%;
+	word-wrap: break-word;
+}
+
+a {
+	text-decoration: none;
+}

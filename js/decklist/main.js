@@ -575,7 +575,7 @@ function statusAndTooltips(valid) {
 				if (validationObject["warning"] === "blank") {
 					notifications.push(prop, ["Missing event date", validType]);
 				} else if (validationObject["warning"] === "futuredate") {
-					notifications.push(prop, ["Event date is not future-set", validType]);
+					notifications.push(prop, ["Event date is set in the past", validType]);
 				} else if (validationObject["error"] === "unrecognized") {
 					notifications.push(prop, ["Event dates should be in the following format: YYYY-MM-DD", validType]);
 				}
