@@ -1,4 +1,6 @@
-var pdfChangeTimer = null; // global timeout filter
+// global timeout filters
+var decklistChangeTimer = null;
+var pdfChangeTimer = null;
 
 // When the page loads, generate a blank deck list preview
 $(document).ready(function() {
@@ -33,10 +35,15 @@ $(document).ready(function() {
 	parseGET();
 });
 
-// Blocks updates to the PDF unless 1000 milliseconds has past since last change
+// Blocks updates to the PDF
 function pdfChangeWait() {
-		if (pdfChangeTimer) { clearTimeout(pdfChangeTimer); }
-		pdfChangeTimer = setTimeout(generateDecklistPDF, 1500);
+	// Attempt to parse the decklists and validate input every 400ms
+	if (decklistChangeTimer) { clearTimeout(decklistChangeTimer); }
+	decklistChangeTimer = setTimeout(function() { parseDecklist(); validateInput(); }, 400);
+
+	// Wait 1500 milliseconds to generate a new PDF
+	if (pdfChangeTimer) { clearTimeout(pdfChangeTimer); }
+	pdfChangeTimer = setTimeout(generateDecklistPDF, 1500);
 }
 
 // Good ol' Javascript, not having a capitalize function on string objects
@@ -262,10 +269,10 @@ function generateDecklistPDF(outputtype) {
 	// start with the blank PDF
 	dl = generateDecklistLayout();
 	
-	// Attempt to parse the decklists
+	// Parse the deck list
 	parseDecklist();
 
-	// input validation alerts
+	// Validate the input
 	validateInput();
 
 	// Helvetica, fuck yeah
@@ -590,7 +597,7 @@ function statusAndTooltips(valid) {
 				} else if (validationObject["warning"] === "unrecognized") {
 					// include a list of unrecognized card names
 					unrecognizedCardsHtml = "<ul><li>" + Object.getOwnPropertyNames(unrecognizedCards).join("</li><li>") + "</li></ul>";
-					notifications.push(prop, ["Could not find the following card names in card database:" + unrecognizedCardsHtml, validType]);
+					notifications.push(prop, ["Couldn't recognize the following card(s):" + unrecognizedCardsHtml, validType]);
 				} else if (validationObject["warning"] === "unparseable") {
 					// include a list of unparseable lines
 					unparseableCardsHtml = "<ul><li>" + unparseableCards.join("</li><li>") + "</li></ul>";
