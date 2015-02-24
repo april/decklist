@@ -551,21 +551,21 @@ function statusAndTooltips(valid) {
 				if (validationObject["warning"] === "blank") {
 					notifications.push(prop, ["Missing first name", validType]);
 				} else if (validationObject["error"] === "toolarge") {
-					notifications.push(prop, ["Long first name breaks PDF layout", validType]);
+					notifications.push(prop, ["First name too long", validType]);
 				}
 			} else if (prop === "lastname") {
 				if (validationObject["warning"] === "blank") {
 					notifications.push(prop, ["Missing last name", validType]);
 				} else if (validationObject["error"] === "toolarge") {
-					notifications.push(prop, ["Long last name breaks PDF layout", validType]);
+					notifications.push(prop, ["Last name too long", validType]);
 				}
 			} else if (prop === "dcinumber") {
 				if (validationObject["warning"] === "blank") {
 					notifications.push(prop, ["Missing DCI number", validType]);
 				} else if (validationObject["error"] === "nonnum") {
-					notifications.push(prop, ["DCI number must only contain numbers", validType]);
+					notifications.push(prop, ["DCI number must contain only numbers", validType]);
 				} else if (validationObject["error"] === "toolarge") {
-					notifications.push(prop, ["DCI number must be 10 digits or less", validType]);
+					notifications.push(prop, ["DCI numbers must be 10 digits or less", validType]);
 				}
 			} else if (prop === "event") {
 				if (validationObject["warning"] === "blank") {
@@ -593,7 +593,7 @@ function statusAndTooltips(valid) {
 				} else if (validationObject["error"] === "quantity") {
 					// include a list of cards that exceed 4 across the main/side
 					excessCardsHtml = "<ul><li>" + excessCards.join("</li><li>") + "</li></ul>";
-					notifications.push(prop, ["The following cards exceed 4 copies across the maindeck and sideboard:" + excessCardsHtml, validType]);
+					notifications.push(prop, ["The following cards exceed 4 copies:" + excessCardsHtml, validType]);
 				} else if (validationObject["warning"] === "unrecognized") {
 					// include a list of unrecognized card names
 					unrecognizedCardsHtml = "<ul><li>" + Object.getOwnPropertyNames(unrecognizedCards).join("</li><li>") + "</li></ul>";
