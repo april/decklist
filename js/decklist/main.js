@@ -1,12 +1,10 @@
-var keyupTimeout = null; // global timeout filter
+var pdfChangeTimer = null; // global timeout filter
 
 // When the page loads, generate a blank deck list preview
 $(document).ready(function() {
 	// bind events to all the input fields on the left side, to generate a PDF on change
-	$("div.left input").keyup(keyupBlock);
-	$("div.left textarea").keyup(keyupBlock);
-	$("#eventdate").change(keyupBlock);
-	$("input[type='radio']").change(keyupBlock);  // sort order
+	$("div.left input, div.left textarea").on("input", pdfChangeWait);
+	$("#eventdate, input[type='radio']").change(pdfChangeWait);
 
 	// bind a date picker to the event date (thanks, jQuery UI)
 	// also skin the upload and download button
@@ -22,10 +20,10 @@ $(document).ready(function() {
 	parseGET();
 });
 
-// A function that blocks updates to the PDF unless 1000 milliseconds has past since changes
-function keyupBlock() {
-		if (keyupTimeout != null) { clearTimeout(keyupTimeout); }
-		keyupTimeout = setTimeout(generateDecklistPDF, 1000);
+// Blocks updates to the PDF unless 1000 milliseconds has past since last changec
+function pdfChangeWait() {
+		if (pdfChangeTimer) { clearTimeout(pdfChangeTimer); }
+		pdfChangeTimer = setTimeout(generateDecklistPDF, 1000);
 }
 
 // Good ol' Javascript, not having a capitalize function on string objects
@@ -240,7 +238,7 @@ function generateDecklistPDF(outputtype) {
 	outputtype = typeof outputtype !== 'undefined' ? outputtype : 'dataurlstring';
 
 	// clear the input timeout before we can generate the PDF
-	keyupTimeout = null;
+	pdfChangeTimer = null;
 
 	// don't generate the preview if showpreview == false
 	if ((outputtype == 'dataurlstring') && (showpreview == false)) {
