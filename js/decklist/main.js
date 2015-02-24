@@ -565,45 +565,45 @@ function statusAndTooltips(valid) {
 			
 			if (prop === "firstname") {
 				if (validationObject["warning"] === "blank") {
-					notifications.push(prop, ["You should enter your first name.", validType]);
+					notifications.push(prop, ["Missing first name", validType]);
 				} else if (validationObject["error"] === "toolarge") {
-					notifications.push(prop, ["Long names break the PDF layout.", validType]);
+					notifications.push(prop, ["Long first name breaks PDF layout", validType]);
 				}
 			} else if (prop === "lastname") {
 				if (validationObject["warning"] === "blank") {
-					notifications.push(prop, ["You should enter your last name.", validType]);
+					notifications.push(prop, ["Missing last name", validType]);
 				} else if (validationObject["error"] === "toolarge") {
-					notifications.push(prop, ["Long names break the PDF layout.", validType]);
+					notifications.push(prop, ["Long last name breaks PDF layout", validType]);
 				}
 			} else if (prop === "dcinumber") {
 				if (validationObject["warning"] === "blank") {
-					notifications.push(prop, ["You should enter your DCI number.", validType]);
+					notifications.push(prop, ["Missing DCI number", validType]);
 				} else if (validationObject["error"] === "nonnum") {
-					notifications.push(prop, ["Your DCI number must only contain numbers.", validType]);
+					notifications.push(prop, ["DCI number must only contain numbers", validType]);
 				} else if (validationObject["error"] === "toolarge") {
-					notifications.push(prop, ["Your DCI number must be 10 digits or less.", validType]);
+					notifications.push(prop, ["DCI number must be 10 digits or less", validType]);
 				}
 			} else if (prop === "event") {
 				if (validationObject["warning"] === "blank") {
-					notifications.push(prop, ["You should enter the event name.", validType]);
+					notifications.push(prop, ["Missing event name", validType]);
 				}
 			} else if (prop === "eventdate") {
 				if (validationObject["warning"] === "blank") {
-					notifications.push(prop, ["You should enter the event date.", validType]);
+					notifications.push(prop, ["Missing event date", validType]);
 				} else if (validationObject["warning"] === "futuredate") {
-					notifications.push(prop, ["This date is not future-set.", validType]);
+					notifications.push(prop, ["Event date is not future-set", validType]);
 				} else if (validationObject["error"] === "unrecognized") {
-					notifications.push(prop, ["Event dates should be in the following format: YYYY-MM-DD.", validType]);
+					notifications.push(prop, ["Event dates should be in the following format: YYYY-MM-DD", validType]);
 				}
 			} else if (prop === "eventlocation") {
 				if (validationObject["warning"] === "blank") {
-					notifications.push(prop, ["You should enter the event location.", validType]);
+					notifications.push(prop, ["Missing event location", validType]);
 				}
 			} else if (prop === "deckmain") {
 				if (validationObject["warning"] === "size") {
-					notifications.push(prop, ["Most decks consist of exactly 60 cards.", validType]);
+					notifications.push(prop, ["Most decks consist of exactly 60 cards", validType]);
 				} else if (validationObject["error"] === "toolarge") {
-					notifications.push(prop, ["This PDF only has space for up to 44 unique cards (including spaces).", validType]);
+					notifications.push(prop, ["This PDF only has space for up to 44 unique cards (including spaces)", validType]);
 				} else if (validationObject["error"] === "quantity") {
 					// include a list of cards that exceed 4 across the main/side
 					excessCardsHtml = "<ul><li>" + excessCards.join("</li><li>") + "</li></ul>";
@@ -611,17 +611,17 @@ function statusAndTooltips(valid) {
 				} else if (validationObject["warning"] === "unrecognized") {
 					// include a list of unrecognized card names
 					unrecognizedCardsHtml = "<ul><li>" + Object.getOwnPropertyNames(unrecognizedCards).join("</li><li>") + "</li></ul>";
-					notifications.push(prop, ["We could not find the following card names in our database:" + unrecognizedCardsHtml, validType]);
+					notifications.push(prop, ["Could not find the following card names in card database:" + unrecognizedCardsHtml, validType]);
 				} else if (validationObject["warning"] === "unparseable") {
 					// include a list of unparseable lines
 					unparseableCardsHtml = "<ul><li>" + unparseableCards.join("</li><li>") + "</li></ul>";
-					notifications.push(prop, ["We couldn't parse the following lines:" + unparseableCardsHtml, validType]);
+					notifications.push(prop, ["Couldn't parse the following lines:" + unparseableCardsHtml, validType]);
 				}
 			} else if (prop === "deckside") {
 				if (validationObject["warning"] === "toosmall") {
-					notifications.push(prop, ["Most sideboards consist of exactly 15 cards.", validType]);
+					notifications.push(prop, ["Most sideboards consist of exactly 15 cards", validType]);
 				} else if (validationObject["error"] === "toolarge") {
-					notifications.push(prop, ["Sideboards may not consist of more than 15 cards.", validType]);
+					notifications.push(prop, ["Sideboards may not consist of more than 15 cards", validType]);
 				}
 			}
 		}

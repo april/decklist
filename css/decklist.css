@@ -210,9 +210,9 @@ h2 {
 }
 
 .details > li {
+	line-height: 23px;
 	list-style-type: none;
 	margin-left: 25px;
-	margin-bottom: 1px;
 	position: relative;
 	transition: color 0.15s;
 }
