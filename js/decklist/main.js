@@ -13,10 +13,10 @@ $(document).ready(function() {
 	$("#upload").button();
 	$("#sortorderfloat").buttonset();
 	
-	// initialize field tooltips, replace | with <br> in tooltip content
+	// initialize field tooltips, replace | with <br /> in tooltip content
 	$(".left input, .left textarea").tooltip({
 		content: function(callback) {
-			callback($(this).prop("title").replace(/\|/g, "<br>"));
+			callback($(this).prop("title").replace(/\|/g, "<br />"));
 		},
 		position: {
 			my: "right top+10",
@@ -657,19 +657,17 @@ function statusAndTooltips(valid) {
 			// update field class and title
 			fieldId = "#" + key;
 			$(fieldId).addClass(fieldClass);
-			$(fieldId).prop("title", newTitle);
+			
+			// add a tooltip only for errors; people were complaining about overzealous tooltips
+			if (fieldClass === "error") { $(fieldId).prop("title", newTitle); }
 		}
 	}
 	
 	// compute new status
 	newStatus = "valid";
-	if (errorLevel & 0x100) {
-		newStatus = "error";
-	} else if (errorLevel & 0x010) {
-		newStatus = "warning";
-	} else if (errorLevel & 0x001) {
-		newStatus = "empty";
-	}
+	if (errorLevel & 0x100)      { newStatus = "error"; }
+	else if (errorLevel & 0x010) { newStatus = "warning"; }
+	else if (errorLevel & 0x001) { newStatus = "empty"; }
 	
 	// set new status, display new notifications
 	$(".status").removeClass("default empty valid warning error").addClass(newStatus);
