@@ -115,20 +115,18 @@ function parseDecklist() {
 
 	// Check the card name against the card database. If it exists, add it to the
 	// appropriate list (main or side), otherwise add it to the unrecognized map.
-	function recognizeCard (card, quantity, list) {
+	function recognizeCard(card, quantity, list) {
 		list = list || "main";
-		recognized = objectHasPropertyCI(cards, card);
-		if (recognized) {
-			list_add(list, recognized, quantity);
-		} else {
-			// if the card name starts with "ae", try using the æ character instead
-			if (card.slice(0,2).toLowerCase() === "ae") {
-				recognized = objectHasPropertyCI(cards, "\u00e6"+card.slice(2));
-				if (recognized) {
-					list_add(list, recognized, quantity);
-					return;
-				}
-			}
+
+		if (card.slice(0,2).toLowerCase() === "ae") { recognized = objectHasPropertyCI(cards, "\u00e6"+card.slice(2)); }
+		else { recognized = objectHasPropertyCI(cards, card); }
+
+		// Always add the card to the list, regardless of if the card is recognized
+		// Still, if not recognized, add it to its special dictionary (unrecognized)
+
+		if (recognized) { list_add(list, recognized, quantity); }
+		else {
+			list_add(list, card, quantity);
 			unrecognized[htmlEncode(card)] = 1;
 		}
 	}
