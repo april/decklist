@@ -12,6 +12,11 @@ function parseDecklist() {
 	maindeck_count = 0;
 	sideboard_count = 0;
 	
+	// Track unrecognized cards and lines that can't be parsed.
+	// (encoded to prevent XSS)
+	unrecognized = {};
+	unparseable = [];
+	
 	
 	// Stop processing the function if there's no main deck
 	if (deckmain == "") { return(null, null); }
@@ -31,13 +36,12 @@ function parseDecklist() {
 	// Loop through all the cards in the main deck field
 	in_sb = false;
 	for (i = 0; i < deckmain.length; i++) {
-
 		// Parse for Magic Workstation style deck
 		if (mws_re.exec(deckmain[i]) != null) {
 			quantity = mws_re.exec(deckmain[i])[1];
 			card = mws_re.exec(deckmain[i])[2];
 
-			list_add("main", card, quantity);
+			recognizeCard(card, quantity);
 		}
 
 		// Parse for Magic Workstation sideboards
@@ -45,7 +49,7 @@ function parseDecklist() {
 			quantity = mwssb_re.exec(deckmain[i])[1];
 			card = mwssb_re.exec(deckmain[i])[2];
 
-			list_add("side", card, quantity);
+			recognizeCard(card, quantity, "side");
 		}
 
 		// Parse for MTGO/TappedOut style decks
@@ -54,9 +58,9 @@ function parseDecklist() {
 			card = mtgo_re.exec(deckmain[i])[2];
 
 			if (in_sb) {	// TappedOut style Sideboard listing
-				list_add("side", card, quantity);
+				recognizeCard(card, quantity, "side");
 			} else {
-				list_add("main", card, quantity);
+				recognizeCard(card, quantity);
 			}
 		}
 
@@ -65,12 +69,16 @@ function parseDecklist() {
 			quantity = mtgosb_re.exec(deckmain[i])[1];
 			card = mtgosb_re.exec(deckmain[i])[2];
 
-			list_add("side", card, quantity);
+			recognizeCard(card, quantity, "side");
 		}
 
 		// If we see "Sideboard:", then we're in the TappedOut style sideboard entries from now on
 		else if (tosb_re.test(deckmain[i])) { in_sb = true; }
-
+		
+		// Could not be parsed, store in appropriate array
+		else {
+			addUnparseable(deckmain[i]);
+		}
 	}
 
 	// Now we get to do the same for the sideboard, but we only have to worry about TCG/MTGO style entries
@@ -80,7 +88,10 @@ function parseDecklist() {
 			quantity = mtgo_re.exec(deckside[i])[1];
 			card = mtgo_re.exec(deckside[i])[2];
 
-			list_add("side", card, quantity);
+			recognizeCard(card, quantity, "side");
+		} else {
+			// Could not be parsed, store in appropriate array
+			addUnparseable(deckside[i]);
 		}
 	}
 
@@ -100,7 +111,48 @@ function parseDecklist() {
 	else if ( $("#sortorderfloat input[name=sortorder]:checked").prop("id") == "sortorder4" ) { // numeric
 		maindeck = sortDecklist(maindeck, 'numerically');
 		sideboard = sortDecklist(sideboard, 'alphabetically');
-	}	
+	}
+
+	// Check the card name against the card database. If it exists, add it to the
+	// appropriate list (main or side), otherwise add it to the unrecognized map.
+	function recognizeCard (card, quantity, list) {
+		list = list || "main";
+		recognized = objectHasPropertyCI(cards, card);
+		if (recognized) {
+			list_add(list, recognized, quantity);
+		} else {
+			// if the card name starts with "ae", try using the æ character instead
+			if (card.slice(0,2).toLowerCase() === "ae") {
+				recognized = objectHasPropertyCI(cards, "\u00e6"+card.slice(2));
+				if (recognized) {
+					list_add(list, recognized, quantity);
+					return;
+				}
+			}
+			unrecognized[htmlEncode(card)] = 1;
+		}
+	}
+	
+	// add the passed string to the unparseable array if it isn't empty or entirely whitespace
+	function addUnparseable(line) {
+		// only store if it's not a falsey value (empty string, etc.)
+		// or entirely composed of whitespace
+		if (htmlEncode(line) && !htmlEncode(line).match(/^\s+$/)) {
+			unparseable.push(htmlEncode(line));
+		}
+	}
+
+	// Case-insensitive property search, modified from:
+	// http://stackoverflow.com/a/12484507/540162
+	// Returns property value (properly-capitalized card name) if found, false otherwise
+	function objectHasPropertyCI(obj, val) {
+		for (var p in obj) {
+			if (obj.hasOwnProperty(p) && p.toLowerCase() === val.toLowerCase()) {
+				return obj[p].n;
+			}
+		}
+		return false;
+	}
 }
 
 function sortDecklist(deck, sortorder) {
@@ -149,6 +201,12 @@ function sortDecklist(deck, sortorder) {
 		// Sort each subcolor, then append them to the final array
 		deck = []
 		for (i = 0; i < color_to_cards_keys.length; i++) {
+			// Push a blank entry onto deck (to separate colors)
+			// unless the deck is empty
+			if (deck.length !== 0) {
+				deck.push(['', 0]);
+			}
+			
 			color = color_to_cards_keys[i];
 			
 			color_to_cards[ color ].sort();   // color_to_cards['A']
@@ -159,10 +217,6 @@ function sortDecklist(deck, sortorder) {
 
 				deck.push([card, quantity]);
 			}
-
-			// Push a blank entry onto deck (to separate colors)
-			deck.push(['', 0]);
-
 		}
 	
 		// We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd column
@@ -209,6 +263,12 @@ function sortDecklist(deck, sortorder) {
 		// Sort each CMC, then append them to the final array
 		deck = []
 		for (i = 0; i < cmc_to_cards_keys.length; i++) {
+			// Push a blank entry onto deck (to separate CMCs)
+			// unless the deck is empty
+			if (deck.length !== 0) {
+				deck.push(['', 0]);
+			}
+			
 			cmc = cmc_to_cards_keys[i];
 			
 			cmc_to_cards[ cmc ].sort();   // cmc_to_cards[3]
@@ -219,10 +279,6 @@ function sortDecklist(deck, sortorder) {
 
 				deck.push([card, quantity]);
 			}
-
-			// Push a blank entry onto deck (to separate CMCs)
-			deck.push(['', 0]);
-
 		}
 	
 		// We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd column
@@ -261,12 +317,39 @@ function sortDecklist(deck, sortorder) {
 }
 
 // Stub to simplify updating deck and sideboard counts
+// Adds a new entry for unique entries, increments existing entries for duplicates
 function list_add(type, card, quantity) {
 	if (type === "main") {
-		maindeck.push([card, quantity]);
+		cardIndex = listContainsCard(maindeck,card);
+		if (cardIndex !== -1) {
+			// arggh, strings!
+			maindeck[cardIndex][1] = parseInt(maindeck[cardIndex][1]) + parseInt(quantity) + "";
+		} else {
+			maindeck.push([card, quantity]);
+		}
 		maindeck_count += parseInt(quantity);
 	} else if (type === "side") {
-		sideboard.push([card, quantity]);
+		cardIndex = listContainsCard(sideboard,card);
+		if (cardIndex !== -1) {
+			// arggh, strings!
+			sideboard[cardIndex][1] = parseInt(sideboard[cardIndex][1]) + parseInt(quantity) + "";
+		} else {
+			sideboard.push([card, quantity]);
+		}
 		sideboard_count += parseInt(quantity);
 	}
+	
+	// Returns the index of the card:quantity pair within the given list, or -1 if not found
+	function listContainsCard(list, card) {
+		for (j=0; j < list.length; j++) {
+			if (list[j][0] === card) {
+				return j;
+			}
+		}
+		return -1;
+	}
+}
+
+function htmlEncode(string) {
+	return string.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
