@@ -33,10 +33,10 @@ $(document).ready(function() {
 	parseGET();
 });
 
-// Blocks updates to the PDF unless 1000 milliseconds has past since last changec
+// Blocks updates to the PDF unless 1000 milliseconds has past since last change
 function pdfChangeWait() {
 		if (pdfChangeTimer) { clearTimeout(pdfChangeTimer); }
-		pdfChangeTimer = setTimeout(generateDecklistPDF, 1000);
+		pdfChangeTimer = setTimeout(generateDecklistPDF, 1500);
 }
 
 // Good ol' Javascript, not having a capitalize function on string objects
@@ -442,8 +442,11 @@ function validateInput() {
 	
 	// check maindeck (size, number of unique cards)
 	// check sideboard (size)
-	if (maindeck_count != 60) {
+	if ((maindeck_count == 0) || (maindeck_count > 60)) {
 		validate.deckmain.push({"warning": "size"});
+	}
+	else if (maindeck_count < 60) {
+		validate.deckmain.push({"error": "toosmall"});
 	}
 	if (maindeck.length > 44) {
 		validate.deckmain.push({"error": "toolarge"});
@@ -601,7 +604,9 @@ function statusAndTooltips(valid) {
 				}
 			} else if (prop === "deckmain") {
 				if (validationObject["warning"] === "size") {
-					notifications.push(prop, ["Most decks consist of exactly 60 cards", validType]);
+					notifications.push(prop, ["Most decks consist of exactly 60 cards", validType]); }
+				else if (validationObject["error"] === "toosmall") {
+					notifications.push(prop, ["Decks may not consist of less than 60 cards", validType]);
 				} else if (validationObject["error"] === "toolarge") {
 					notifications.push(prop, ["This PDF only has space for up to 44 unique cards (including spaces)", validType]);
 				} else if (validationObject["error"] === "quantity") {
