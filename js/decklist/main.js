@@ -399,64 +399,40 @@ function validateInput() {
 		"deckside": []
 	};
 	
-	// check first/last name (nonblank)
-	if ($("#firstname").val() === "") {
-		validate.firstname.push({"warning": "blank"});
-	} else if ($("#firstname").val().length > 20) {
-		validate.firstname.push({"error": "toolarge"});
-	}
-	if ($("#lastname").val() === "") {
-		validate.lastname.push({"warning": "blank"});
-	} else if ($("#lastname").val().length > 20) {
-		validate.lastname.push({"error": "toolarge"});
-	}
-	
-	// check DCI number (nonblank, numeric, < 11 digits)
-	if ($("#dcinumber").val() === "") {
-		validate.dcinumber.push({"warning": "blank"});
-	} else if (!$("#dcinumber").val().match(/^[\d]+$/)) {
-		validate.dcinumber.push({"error": "nonnum"});
-	}
-	if ($("#dcinumber").val().length >= 11) {
-		validate.dcinumber.push({"error": "toolarge"});
-	}
-	
-	// check event name, date, location (nonblank)
-	if ($("#event").val() === "") {
-		validate.event.push({"warning": "blank"});
-	}
-	if ($("#eventdate").val() === "") {
-		validate.eventdate.push({"warning": "blank"});
-	} else if (!$("#eventdate").val().match(/^\d{4}\-\d{2}\-\d{2}$/)) {
-		validate.eventdate.push({"error": "unrecognized"});
+	// check first name (non-blank, too long)
+	if ($("#firstname").val() === "")           { validate.firstname.push({"warning": "blank"});  }
+	else if ($("#firstname").val().length > 20) { validate.firstname.push({"error": "toolarge"}); }
 
-	// if the event date is before today
-	} else if (Date.parse($("#eventdate").val()) <=
-		new Date(new Date().setDate(new Date().getDate()-1)).setHours(0))
-	{
+	// check last name (non-blank, too long)
+	if ($("#lastname").val() === "")           { validate.lastname.push({"warning": "blank"});  }
+	else if ($("#lastname").val().length > 20) { validate.lastname.push({"error": "toolarge"}); }
+	
+	// check DCI number (non-blank, numeric, < 11 digits)
+	if ($("#dcinumber").val() === "")                 { validate.dcinumber.push({"warning": "blank"});  }
+	else if (!$("#dcinumber").val().match(/^[\d]+$/)) { validate.dcinumber.push({"error": "nonnum"});   }
+	if ($("#dcinumber").val().length >= 11)           { validate.dcinumber.push({"error": "toolarge"}); }
+	
+	// check event name (non-blank)
+	if ($("#event").val() === "") { validate.event.push({"warning": "blank"}); }
+
+	// check event date (non-blank, unrecognized format, before today)
+	if ($("#eventdate").val() === "")                               { validate.eventdate.push({"warning": "blank"});      }
+	else if (!$("#eventdate").val().match(/^\d{4}\-\d{2}\-\d{2}$/)) { validate.eventdate.push({"error": "unrecognized"}); }
+	else if (Date.parse($("#eventdate").val()) <= new Date(new Date().setDate(new Date().getDate()-1)).setHours(0)) {
 		validate.eventdate.push({"warning": "futuredate"});
 	}
-	if ($("#eventlocation").val() === "") {	
-		validate.eventlocation.push({"warning": "blank"});
-	}
+
+	// check event location (non-blank)
+	if ($("#eventlocation").val() === "") {	validate.eventlocation.push({"warning": "blank"}); }
 	
 	// check maindeck (size, number of unique cards)
+	if ((maindeck_count == 0) || (maindeck_count > 60)) { validate.deckmain.push({"warning": "size"});   }
+	else if (maindeck_count < 60)                       { validate.deckmain.push({"error": "toosmall"}); }
+	if (maindeck.length > 44)                           { validate.deckmain.push({"error": "toolarge"}); }
+
 	// check sideboard (size)
-	if ((maindeck_count == 0) || (maindeck_count > 60)) {
-		validate.deckmain.push({"warning": "size"});
-	}
-	else if (maindeck_count < 60) {
-		validate.deckmain.push({"error": "toosmall"});
-	}
-	if (maindeck.length > 44) {
-		validate.deckmain.push({"error": "toolarge"});
-	}
-	if (sideboard_count > 15) {
-		validate.deckside.push({"error": "toolarge"});
-	}
-	if (sideboard_count < 15) {
-		validate.deckside.push({"warning": "toosmall"});
-	}
+	if (sideboard_count > 15) { validate.deckside.push({"error": "toolarge"});   }
+	if (sideboard_count < 15) { validate.deckside.push({"warning": "toosmall"}); }
 
 	// check combined main/sb (quantity of each unique card, unrecognized cards)
 	mainPlusSide = mainAndSide();
@@ -473,9 +449,7 @@ function validateInput() {
 			if (!allowed) { excessCards.push(mainPlusSide[i][0]); }
 		}
 	}
-	if (excessCards.length) {
-		validate.deckmain.push({"error": "quantity"});
-	}
+	if (excessCards.length) { validate.deckmain.push({"error": "quantity"}); }
 	
 	unrecognizedCards = {};
 	unparseableCards = [];
