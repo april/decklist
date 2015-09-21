@@ -115,8 +115,9 @@ function parseDecklist() {
   // appropriate list (main or side), otherwise add it to the unrecognized map.
   function recognizeCard(card, quantity, list) {
     list = list || 'main';
+    var aeloc = card.toLowerCase().indexOf('ae');
 
-    if (card.slice(0,2).toLowerCase() === 'ae') { recognized = objectHasPropertyCI(cards, '\u00e6'+card.slice(2)); }
+    if (aeloc != -1) { recognized = objectHasPropertyCI(cards, card.slice(0,aeloc)+'\u00e6'+card.slice(aeloc+2)); }
     else { recognized = objectHasPropertyCI(cards, card); }
 
     // Always add the card to the list, regardless of if the card is recognized
