@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Clean up a bit
-rm *.js
+rm -f *.js *.zip
 
 curl http://mtgjson.com/json/AllCards-x.json.zip > AllCards-x.json.zip
 unzip AllCards-x.json.zip
