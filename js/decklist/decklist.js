@@ -117,7 +117,10 @@ function parseDecklist() {
     list = list || 'main';
     var aeloc = card.toLowerCase().indexOf('ae');
 
-    if (aeloc != -1) { recognized = objectHasPropertyCI(cards, card.slice(0,aeloc)+'\u00e6'+card.slice(aeloc+2)); }
+    if (aeloc != -1) {
+      recognized = objectHasPropertyCI(cards, card.slice(0, aeloc)+'\u00e6'+card.slice(aeloc+2)) ||
+      objectHasPropertyCI(cards, card);;
+    }
     else { recognized = objectHasPropertyCI(cards, card); }
 
     // Always add the card to the list, regardless of if the card is recognized
