@@ -449,7 +449,7 @@ function validateInput() {
   excessCards = [];
   allowedDupes = ['Plains', 'Island', 'Swamp', 'Mountain', 'Forest',
     'Snow-Covered Plains', 'Snow-Covered Island', 'Snow-Covered Swamp', 'Snow-Covered Mountain',
-    'Snow-Covered Forest', 'Relentless Rats', 'Shadowborn Apostle'];
+    'Snow-Covered Forest', 'Wastes', 'Relentless Rats', 'Shadowborn Apostle'];
   for (i = 0; i < mainPlusSide.length; i++) {
     if (parseInt(mainPlusSide[i][1]) > 4) {
       allowed = false;
