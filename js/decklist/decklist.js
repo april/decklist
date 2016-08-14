@@ -110,6 +110,10 @@ function parseDecklist() {
     maindeck = sortDecklist(maindeck, 'numerically');
     sideboard = sortDecklist(sideboard, 'alphabetically');
   }
+  else if ( $('#sortorderfloat input[name=sortorder]:checked').prop('id') == 'sortorder6' ) { // type
+    maindeck = sortDecklist(maindeck, 'type');
+    sideboard = sortDecklist(sideboard, 'alphabetically');
+  }
 
   // Check the card name against the card database. If it exists, add it to the
   // appropriate list (main or side), otherwise add it to the unrecognized map.
@@ -301,6 +305,56 @@ function sortDecklist(deck, sortorder) {
 
     // After sorting is done, we can remove the lower case index
     for (i = 0; i < deck.length; i++) { deck[i] = [ deck[i][2], deck[i][0] ] }
+  }
+
+  else if ( sortorder == 'type' ) {
+
+    var type_to_cards = {}
+
+    for (i = 0; i < deck.length; i++) {
+
+      // We're going to search by lower case
+      var lcard = deck[i][0].toLowerCase();
+
+      // Grab the card's type
+      if (lcard in cards) { type = cards[ lcard ]['t']; }
+      else { type = 'z'; } // Unknown
+
+      // Create the type subarray
+      if ( !(type in type_to_cards ) ) { type_to_cards[type] = []; }
+
+      // Fix the Aetherling issue until the PDF things supports it
+      lcard = lcard.replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
+      deck[i][0] = deck[i][0].replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
+
+      // Add the card to that array, including lower-case (only used for sorting)
+      type_to_cards[type].push( [ lcard, deck[i][0], deck[i][1] ] );
+
+    }
+
+    // Get the list of types in the deck
+    type_to_cards_keys = Object.keys(type_to_cards).sort();
+
+    // Sort each CMC, then append them to the final array
+    deck = []
+    for (i = 0; i < type_to_cards_keys.length; i++) {
+      // Push a blank entry onto deck (to separate types)
+      // unless the deck is empty
+      if (deck.length !== 0) {
+        deck.push(['', 0]);
+      }
+
+      type = type_to_cards_keys[i];
+
+      type_to_cards[ type ].sort();   // type_to_cards[3]
+
+      for (j = 0; j < type_to_cards[type].length; j++) {
+        card = type_to_cards[type][j][1];
+        quantity = type_to_cards[type][j][2];
+
+        deck.push([card, quantity]);
+      }
+    }
   }
 
   // Get the card's true English name (ignoring any particular capitalization that someone may have done)
