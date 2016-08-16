@@ -73,11 +73,11 @@ for card in cards:
     elif cards[card]['colors'] == ['Red']:    ocards[ocard]['c'] = 'D'
     elif cards[card]['colors'] == ['Green']:  ocards[ocard]['c'] = 'E'
 
-    if   'Land'     in cards[card]['types']: ocards[ocard]['t'] = '1'
-    elif 'Creature' in cards[card]['types']: ocards[ocard]['t'] = '2'
-    elif 'Sorcery'  in cards[card]['types']: ocards[ocard]['t'] = '3'
-    elif 'Instant'  in cards[card]['types']: ocards[ocard]['t'] = '3'
-    else:                                    ocards[ocard]['t'] = '4'
+    if   'Land'     in cards[card]['types']:  ocards[ocard]['t'] = '1'
+    elif 'Creature' in cards[card]['types']:  ocards[ocard]['t'] = '2'
+    elif 'Sorcery'  in cards[card]['types']:  ocards[ocard]['t'] = '3'
+    elif 'Instant'  in cards[card]['types']:  ocards[ocard]['t'] = '3'
+    else:                                     ocards[ocard]['t'] = '4'
 
     # Now try to deal with CMC
     if 'cmc' not in cards[card]: ocards[ocard]['m'] = 99

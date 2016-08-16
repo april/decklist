@@ -346,7 +346,7 @@ function sortDecklist(deck, sortorder) {
 
       type = type_to_cards_keys[i];
 
-      type_to_cards[ type ].sort();   // type_to_cards[3]
+      type_to_cards[ type ].sort();
 
       for (j = 0; j < type_to_cards[type].length; j++) {
         card = type_to_cards[type][j][1];
