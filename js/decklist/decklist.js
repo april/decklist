@@ -317,8 +317,16 @@ function sortDecklist(deck, sortorder) {
       var lcard = deck[i][0].toLowerCase();
 
       // Grab the card's type
-      if (lcard in cards) { type = cards[ lcard ]['t']; }
-      else { type = 'z'; } // Unknown
+      var type, cmc;
+      if (lcard in cards) {
+        type = cards[ lcard ]['t'];
+        cmc = cards [ lcard ]['m'];
+      }
+      // Unknown:
+      else {
+        type = 'z';
+        cmc = 99;
+      }
 
       // Create the type subarray
       if ( !(type in type_to_cards ) ) { type_to_cards[type] = []; }
@@ -328,7 +336,7 @@ function sortDecklist(deck, sortorder) {
       deck[i][0] = deck[i][0].replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
 
       // Add the card to that array, including lower-case (only used for sorting)
-      type_to_cards[type].push( [ lcard, deck[i][0], deck[i][1] ] );
+      type_to_cards[type].push( [ lcard, deck[i][0], deck[i][1], cmc ] );
 
     }
 
@@ -344,9 +352,19 @@ function sortDecklist(deck, sortorder) {
         deck.push(['', 0]);
       }
 
-      type = type_to_cards_keys[i];
+      var type = type_to_cards_keys[i];
 
-      type_to_cards[ type ].sort();
+      function compareCMC(a, b) {
+        if (a[3] < b[3]) return -1;
+        else if (a[3] > b[3]) return 1;
+        else {
+          if (a[0] < b[0]) return -1;
+          else if (a[0] > b[0]) return -1;
+          else return 0;
+        }
+      }
+
+      type_to_cards[ type ].sort(compareCMC);
 
       for (j = 0; j < type_to_cards[type].length; j++) {
         card = type_to_cards[type][j][1];
