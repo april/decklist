@@ -16,7 +16,10 @@ $(document).ready(function() {
   $('#eventdate').datepicker({ dateFormat: 'yy-mm-dd' }); // ISO-8601, woohoo
   $('#download').button();
   $('#upload').button();
-  $('#sortorderfloat').buttonset();
+  //$('#sortorderfloat').controlgroup();
+  $('input[type=radio]').checkboxradio({
+    icon: false
+  });
 
   // initialize field tooltips, replace | with <br /> in tooltip content
   $('.left input, .left textarea').tooltip({
