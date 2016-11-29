@@ -1,0 +1,54 @@
+==================================================================
+https://keybase.io/april
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of https://decklist.org
+  * I am april (https://keybase.io/april) on keybase.
+  * I have a public key ASAr0_V2frLYimd4jhi1nUnLgRPlAgGkp9MqOmjgZv7Higo
+
+To do so, I am signing this object:
+
+{
+    "body": {
+        "key": {
+            "eldest_kid": "0101c7a388d9a356a6ef186fd6375158321ff0fecfbac971527af0fc9015f9dd8e500a",
+            "host": "keybase.io",
+            "kid": "01202bd3f5767eb2d88a67788e18b59d49cb8113e50201a4a7d32a3a68e066fec78a0a",
+            "uid": "f43be47b62390d15a578b4d042af4000",
+            "username": "april"
+        },
+        "service": {
+            "hostname": "decklist.org",
+            "protocol": "https:"
+        },
+        "type": "web_service_binding",
+        "version": 1
+    },
+    "client": {
+        "name": "keybase.io go client",
+        "version": "1.0.18"
+    },
+    "ctime": 1480451675,
+    "expire_in": 504576000,
+    "merkle_root": {
+        "ctime": 1480451660,
+        "hash": "d2cef32c208639b77828234639716a5e43c7df19a1ab29034f521a69800c8298f4213ad0ae1b7a51916d2ac05b5dc742441e38ebb3ddf789ae14434529cf944e",
+        "seqno": 740604
+    },
+    "prev": "2a867b781338b360a9ab00dd9d08c8602b174bb26ff6cfdb74fb30962b728ad1",
+    "seqno": 17,
+    "tag": "signature"
+}
+
+which yields the signature:
+
+hKRib2R5hqhkZXRhY2hlZMOpaGFzaF90eXBlCqNrZXnEIwEgK9P1dn6y2IpneI4YtZ1Jy4ET5QIBpKfTKjpo4Gb+x4oKp3BheWxvYWTFAvJ7ImJvZHkiOnsia2V5Ijp7ImVsZGVzdF9raWQiOiIwMTAxYzdhMzg4ZDlhMzU2YTZlZjE4NmZkNjM3NTE1ODMyMWZmMGZlY2ZiYWM5NzE1MjdhZjBmYzkwMTVmOWRkOGU1MDBhIiwiaG9zdCI6ImtleWJhc2UuaW8iLCJraWQiOiIwMTIwMmJkM2Y1NzY3ZWIyZDg4YTY3Nzg4ZTE4YjU5ZDQ5Y2I4MTEzZTUwMjAxYTRhN2QzMmEzYTY4ZTA2NmZlYzc4YTBhIiwidWlkIjoiZjQzYmU0N2I2MjM5MGQxNWE1NzhiNGQwNDJhZjQwMDAiLCJ1c2VybmFtZSI6ImFwcmlsIn0sInNlcnZpY2UiOnsiaG9zdG5hbWUiOiJkZWNrbGlzdC5vcmciLCJwcm90b2NvbCI6Imh0dHBzOiJ9LCJ0eXBlIjoid2ViX3NlcnZpY2VfYmluZGluZyIsInZlcnNpb24iOjF9LCJjbGllbnQiOnsibmFtZSI6ImtleWJhc2UuaW8gZ28gY2xpZW50IiwidmVyc2lvbiI6IjEuMC4xOCJ9LCJjdGltZSI6MTQ4MDQ1MTY3NSwiZXhwaXJlX2luIjo1MDQ1NzYwMDAsIm1lcmtsZV9yb290Ijp7ImN0aW1lIjoxNDgwNDUxNjYwLCJoYXNoIjoiZDJjZWYzMmMyMDg2MzliNzc4MjgyMzQ2Mzk3MTZhNWU0M2M3ZGYxOWExYWIyOTAzNGY1MjFhNjk4MDBjODI5OGY0MjEzYWQwYWUxYjdhNTE5MTZkMmFjMDViNWRjNzQyNDQxZTM4ZWJiM2RkZjc4OWFlMTQ0MzQ1MjljZjk0NGUiLCJzZXFubyI6NzQwNjA0fSwicHJldiI6IjJhODY3Yjc4MTMzOGIzNjBhOWFiMDBkZDlkMDhjODYwMmIxNzRiYjI2ZmY2Y2ZkYjc0ZmIzMDk2MmI3MjhhZDEiLCJzZXFubyI6MTcsInRhZyI6InNpZ25hdHVyZSJ9o3NpZ8RAye3rvat9jFvuqs4Qbts0bwPHc1j67bY2SbSjC1nKRt8ckCTEoxavlNx0roQ35rEq0YvFbLXESTOtvhgHBk6hA6hzaWdfdHlwZSCkaGFzaIKkdHlwZQildmFsdWXEIIZOtpFWD8nPXWQqlrg9YxzbmdvkvL1qFc4uzxXL+o1No3RhZ80CAqd2ZXJzaW9uAQ==
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/april
+
+==================================================================
