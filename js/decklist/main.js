@@ -327,6 +327,10 @@ function generateDecklistPDF(outputtype) {
   }
 
   dcinumber = $('#dcinumber').val();
+  if (dcinumber) { // only if there is a dci number
+    dcinumber = DCI.getTenIfValid(dcinumber);
+    dcinumber = dcinumber.toString(); //convert to string (function returns an int)
+  }
 
   // put the DCI number into the PDF
   y = 372;
@@ -420,10 +424,16 @@ function validateInput() {
   if ($('#lastname').val() === '')           { validate.lastname.push({'warning': 'blank'});  }
   else if ($('#lastname').val().length > 20) { validate.lastname.push({'error': 'toolarge'}); }
 
-  // check DCI number (non-blank, numeric, < 11 digits)
+  // check DCI number (non-blank, numeric, < 11 digits, valid, has check digit, was changed)
   if ($('#dcinumber').val() === '')                 { validate.dcinumber.push({'warning': 'blank'});  }
   else if (!$('#dcinumber').val().match(/^[\d]+$/)) { validate.dcinumber.push({'error': 'nonnum'});   }
-  if ($('#dcinumber').val().length >= 11)           { validate.dcinumber.push({'error': 'toolarge'}); }
+  else if ($('#dcinumber').val().length >= 11)      { validate.dcinumber.push({'error': 'toolarge'}); }
+  else if (!DCI.isValid($('#dcinumber').val()))     { validate.dcinumber.push({'error': 'invalid'});  }
+  else {
+    if (DCI.isValid($('#dcinumber').val()) == -1)   { validate.dcinumber.push({'warning': 'nocheck'});}
+    if (DCI.wasChanged($('#dcinumber').val()))      { validate.dcinumber.push({'warning': 'changed'});}
+  }
+
 
   // check event name (non-blank)
   if ($('#event').val() === '') { validate.event.push({'warning': 'blank'}); }
@@ -572,6 +582,12 @@ function statusAndTooltips(valid) {
           notifications.push(prop, ['DCI number must contain only numbers', validType]);
         } else if (validationObject['error'] === 'toolarge') {
           notifications.push(prop, ['DCI numbers must be 10 digits or less', validType]);
+        } else if (validationObject['error'] === 'invalid') {
+          notifications.push(prop, ['DCI number is invalid', validType]);
+        } else if (validationObject['warning'] === 'nocheck') {
+          notifications.push(prop, ['We cannot verify that your DCI number is valid as it is in an old format. Please double-check it.', validType]);
+        } else if (validationObject['warning'] === 'changed') {
+          notifications.push(prop, ['Your DCI number was expanded to the newer 10 digit system', validType]);
         }
       } else if (prop === 'event') {
         if (validationObject['warning'] === 'blank') {
