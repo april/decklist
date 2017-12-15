@@ -48,10 +48,6 @@ for card in cards:
     # We're going to store them in lowercase
     ocard = card.lower()
 
-    # Python's Unicode support sucks, as does everybodies.  Manually
-    # replace the Ae to lower case
-    ocard = ocard.replace(u'\xc6', u'\xe6')
-
     # Skip tokens
     if cards[card]['layout'] == 'token': continue
 
@@ -93,7 +89,6 @@ for card in cards:
     # Now to handle split cards (ugh)
     if 'names' in cards[card]:
         name = " // ".join(cards[card]['names'])
-        ocard = name.lower().replace(u'\xc6', u'\xe6')   # Just like a real card
 
         ocards[ocard] = {}
         ocards[ocard]['c'] = 'S'
