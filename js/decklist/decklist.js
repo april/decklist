@@ -119,7 +119,11 @@ function parseDecklist() {
   // appropriate list (main or side), otherwise add it to the unrecognized map.
   function recognizeCard(card, quantity, list) {
     list = list || 'main';
-      recognized = objectHasPropertyCI(cards, card);
+	
+	  // Only perform lookup using "ae", not "Æ" or "æ"
+      card = card.replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
+      
+	  recognized = objectHasPropertyCI(cards, card);
 
     // Always add the card to the list, regardless of if the card is recognized
     // Still, if not recognized, add it to its special dictionary (unrecognized)
