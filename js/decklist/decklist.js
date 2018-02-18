@@ -119,13 +119,11 @@ function parseDecklist() {
   // appropriate list (main or side), otherwise add it to the unrecognized map.
   function recognizeCard(card, quantity, list) {
     list = list || 'main';
-    var aeloc = card.toLowerCase().indexOf('ae');
-
-    if (aeloc != -1) {
-      recognized = objectHasPropertyCI(cards, card.slice(0, aeloc)+'\u00e6'+card.slice(aeloc+2)) ||
-      objectHasPropertyCI(cards, card);;
-    }
-    else { recognized = objectHasPropertyCI(cards, card); }
+	
+	  // Only perform lookup using "ae", not "Æ" or "æ"
+      card = card.replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
+      
+	  recognized = objectHasPropertyCI(cards, card);
 
     // Always add the card to the list, regardless of if the card is recognized
     // Still, if not recognized, add it to its special dictionary (unrecognized)
@@ -190,10 +188,6 @@ function sortDecklist(deck, sortorder) {
       // Create the color subarray
       if ( !(color in color_to_cards ) ) { color_to_cards[color] = []; }
 
-      // Fix the Aetherling issue until the PDF things supports it
-      lcard = lcard.replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
-      deck[i][0] = deck[i][0].replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
-
       // Add the card to that array, including lower-case (only used for sorting)
       color_to_cards[color].push( [ lcard, deck[i][0], deck[i][1] ] );
 
@@ -251,10 +245,6 @@ function sortDecklist(deck, sortorder) {
 
       // Create the cmc subarray
       if ( !(cmc in cmc_to_cards ) ) { cmc_to_cards[cmc] = []; }
-
-      // Fix the Aetherling issue until the PDF things supports it
-      lcard = lcard.replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
-      deck[i][0] = deck[i][0].replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
 
       // Add the card to that array, including lower-case (only used for sorting)
       cmc_to_cards[cmc].push( [ lcard, deck[i][0], deck[i][1] ] );
@@ -322,10 +312,6 @@ function sortDecklist(deck, sortorder) {
 
       // Create the type subarray
       if ( !(type in type_to_cards ) ) { type_to_cards[type] = []; }
-
-      // Fix the Aetherling issue until the PDF things supports it
-      lcard = lcard.replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
-      deck[i][0] = deck[i][0].replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
 
       // Add the card to that array, including lower-case (only used for sorting)
       type_to_cards[type].push( [ lcard, deck[i][0], deck[i][1] ] );
