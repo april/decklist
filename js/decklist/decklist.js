@@ -119,6 +119,7 @@ function parseDecklist() {
   // appropriate list (main or side), otherwise add it to the unrecognized map.
   function recognizeCard(card, quantity, list) {
     list = list || 'main';
+    card = card.trim();
     var aeloc = card.toLowerCase().indexOf('ae');
 
     if (aeloc != -1) {
