@@ -16,11 +16,8 @@
   <!-- List of all cards (thanks, mtgjson!) -->
   <script type="text/javascript" src="js/cards/decklist-cards-min.js" ></script>
 
-  <!-- jsPDF and associated libraries -->
+  <!-- jsPDF -->
   <script type="text/javascript" src="js/jsPDF/jspdf-1.3.4.min.js"></script>
-  <script type="text/javascript" src="js/jsPDF/addimage.js"></script>
-  <script type="text/javascript" src="js/jsPDF/standard_fonts_metrics.js"></script>
-  <script type="text/javascript" src="js/FileSaver/FileSaver-1.3.3.min.js"></script>
 
   <!-- Code for the website -->
   <script type="text/javascript" src="js/decklist/decklist.js"></script>
@@ -61,7 +58,7 @@
           </label>
           <h2>Deck Information</h2>
           <label for="deckname">
-            <span>Deck Name:</span>
+            <span>Deck Name / Archetype:</span>
             <input type="text" id="deckname" placeholder="(optional)">
           </label>
           <label for="deckdesigner">
@@ -82,17 +79,22 @@
       </div>
       <div id="sortorderwrapper">
         <div id="sortorderfloat">
-          <input type="radio" id="sortorder1" name="sortorder"><label for="sortorder1">Alphabetically</label>
-          <input type="radio" id="sortorder2" name="sortorder"><label for="sortorder2">CMC</label>
-          <input type="radio" id="sortorder3" name="sortorder" checked><label for="sortorder3">Color (recommended)</label>
-          <input type="radio" id="sortorder4" name="sortorder"><label for="sortorder4">Numerically</label>
-          <input type="radio" id="sortorder5" name="sortorder"><label for="sortorder5">Original</label>
-          <input type="radio" id="sortorder6" name="sortorder"><label for="sortorder6">Type</label>
+          <input type="radio" id="sort-alphabetical" name="sortorder"><label for="sort-alphabetical">Alphabetically</label>
+          <input type="radio" id="sort-cmc" name="sortorder"><label for="sort-cmc">CMC</label>
+          <input type="radio" id="sort-color" name="sortorder" checked><label for="sort-color">Color (recommended)</label>
+          <input type="radio" id="sort-numeric" name="sortorder"><label for="sort-numeric">Numerically</label>
+          <input type="radio" id="sort-original" name="sortorder"><label for="sort-original">Original</label>
+          <input type="radio" id="sort-type" name="sortorder"><label for="sort-type">Type</label>
         </div>
       </div>
     </div>
 
     <div class="right">
+      <h2>Decksheet Format</h2>
+      <div id="decksheetformatselector">
+        <input type="radio" id="decksheet-wotc" name="decksheetformat" checked><label for="decksheet-wotc"><abbr title="Wizards of the Coast">WotC</abbr></label>
+        <input type="radio" id="decksheet-scg" name="decksheetformat"><label for="decksheet-scg"><abbr title="Star City Games">SCG</abbr></label>
+      </div>
       <h2>
         Decklist Preview
       </h2>
