@@ -11,11 +11,11 @@ Interested in directly linking to [decklist.org](https://www.decklist.org) for y
 - **`lastname`**: the participant's last name (e.g. King)
 - **`dcinumber`**: the participant's DCI number (e.g. 1234567890, no dashes needed)
 - **`event`**: the name of the event (e.g. Grand Prix Minneapolis)
-- **`eventdate`**: the date of the event (e.g. 2099-12-31)
+- **`eventdate`**: the date of the event (e.g. 2018-12-31)
 - **`eventlocation`**: the physical location of the event (e.g. Minneapolis Convention Center)
 - **`deckmain`**: the deck itself; this can be in any format the website understands (use `%0A` for newlines)
 - **`deckside`**: the side itself; this can be in any format the website understands (use `%0A` for newlines)
-- **`logo`**: please contact [april@twoevils.org](mailto:april@twoevils.org), if you'd like to replace the DCI logo
+- **`logo`**: please contact [april@pokeinthe.io](mailto:april@pokeinthe.io), if you'd like to replace the DCI logo
 
 Please note that any field not specifically set will simply be left blank on the form.
 
