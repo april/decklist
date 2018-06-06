@@ -1,409 +1,331 @@
-// Try to gracefully parse as many decks as possible
-// Parsing data is like the worst
-function parseDecklist() {
-  deckmain = $('#deckmain').val();
-  deckside = $('#deckside').val();
+/* global $, cards */
 
-  // Let's store the lists in a tidy little array
-  maindeck = [];
-  sideboard = [];
+// Accepts optional parameters for maindeck and sideboard input
+// If not passed--except when testing, this should be the case--form fields are read for these values
+// Returns the following object:
+// {
+//   main: [ {...card, q: quantity}, ... ],
+//   side: [ {...card, q: quantity}, ... ],
+//   unrecognized: [ cardName, ... ],
+//   unparseable: [ string, ... ]
+// }
+function parseDecklist(deckmain, deckside) {
+  deckmain = deckmain || $('#deckmain'), deckmain = deckmain.val().split('\n'),
+  deckside = deckside || $('#deckside'), deckside = deckside.val().split('\n');
+  var lists = {
+    main: [],
+    side: [],
+    unrecognized: [],
+    unparseable: [],
+  };
+  const cardRE = {
+    main: [
+      /^\s*(\d+)\s+\[.*\]\s+(.+?)\s*$/,      // MWS, what an ugly format
+      /^\s*(\d+)x*\s(.+?)\s*$/,              // MTGO deck format (4 Brainstorm) also TCG (4x Brainstorm)
+    ],
+    side: [
+      /^\s*SB:\s*(\d+)\s+\[.*\]\s(.+?)\s*$/, // MWS, what an ugly format
+      /^\s*SB:\s+(\d+)\s(.+?)\s*$/,          // Sideboard lines begin with SB:
+    ],
+  };
 
-  // And let's store their counts for future reference
-  maindeck_count = 0;
-  sideboard_count = 0;
+  // Get cards from maindeck and sideboard inputs
+  lists = list_merge(lists, scan(deckmain, cardRE['main'].concat(cardRE['side'])));
+  lists = list_merge(lists, scan(deckside, cardRE['main'], 'side'));
 
-  // Track unrecognized cards and lines that can't be parsed.
-  // (encoded to prevent XSS)
-  unrecognized = {};
-  unparseable = [];
+  // de-duplicate unrecognized card names
+  lists['unrecognized'] = lists['unrecognized'].filter(onlyUnique);
 
-  // Stop processing the function if there's no main deck
-  if (deckmain == '') { return (null, null); }
+  return lists;
 
-  // Split main deck and sideboard by newlines
-  deckmain = deckmain.split('\n');
-  deckside = deckside.split('\n');
+  // helper functions
 
-
-  var mtgoRE   = /^(\d+)x*\s(.+)/;             // MTGO deck format (4 Brainstorm) also TCG (4x Brainstorm)
-  var mtgosbRE = /^SB:\s+(\d+)\s(.+)/;       // Sideboard lines begin with SB:
-  var mwsRE    = /^\s*(\d+)\s+\[.*\]\s+(.+)/;       // MWS, what an ugly format
-  var mwssbRE  = /^SB:\s*(\d+)\s+\[.*\]\s(.+)/;  // MWS, what an ugly format
-  var tosbRE   = /^Sideboard/;                 // Tappedout looks like MTGO, except sideboard begins with Sideboard:  Salvation, same, but no colon
-
-  // Loop through all the cards in the main deck field
-  in_sb = false;
-  for (i = 0; i < deckmain.length; i++) {
-    // Parse for Magic Workstation style deck
-    if (mwsRE.exec(deckmain[i]) != null) {
-      quantity = mwsRE.exec(deckmain[i])[1];
-      card = mwsRE.exec(deckmain[i])[2];
-
-      recognizeCard(card, quantity);
+  // Scans lines of a given array for cards
+  // Accepts an array of input strings, an array of regexes to check against, and
+  // an optional "list" referring to the deck that should be used by default (default is 'main')
+  // Returns a "lists" object, structured like the one defined at the top of parseDecklist()
+  function scan(lines, regexes, list = 'main') {
+    var identified = {
+        main: [],
+        side: [],
+        unrecognized: [],
+        unparseable: [],
+      },
+      toSB = /^\s*Sideboard/, // Tappedout looks like MTGO, except sideboard begins with "Sideboard:"; Salvation, same, but no colon
+      in_sb = false;
+    // ensure list is actually a property of identified
+    if (!identified.hasOwnProperty(list)) {
+      list = 'main';
     }
 
-    // Parse for Magic Workstation sideboards
-    else if (mwssbRE.exec(deckmain[i]) != null) {
-      quantity = mwssbRE.exec(deckmain[i])[1];
-      card = mwssbRE.exec(deckmain[i])[2];
+    // main parsing loop
+    linesLoop: for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      // check for sideboard switch statement
+      if (list === 'main' && toSB.test(line)) {
+        in_sb = true;
+        continue;
+      }
+      // check lines against passed regexes for cards
+      for (var j = 0; j < regexes.length; j++) {
+        let re = regexes[j];
+        if (!re.test(line)) {
+          continue;
+        }
 
-      recognizeCard(card, quantity, 'side');
+        let result = re.exec(line),
+          quantity = parseInt(result[1]),
+          cardName = result[2],
+          card = getCard(cardName);
+        // add quantity field to card object
+        if (card) {
+          card['q'] = quantity;
+        } else {
+          // car is not recognized; create a dummy card object
+          var encodedCardName = htmlEncode(cardName);
+          card = {
+            'n': encodedCardName,
+            'q': quantity,
+          };
+          // add card name to unrecognized array only if it is not already present
+          if (identified['unrecognized'].indexOf(encodedCardName) === -1) {
+            identified['unrecognized'].push(encodedCardName);
+          }
+        }
+        // switch to sideboard if sideboard switch has already been found
+        if (list === 'main' && in_sb) {
+          list = 'side';
+        }
+        // add card to identified list
+        identified[list] = list_add(identified[list], card);
+        continue linesLoop;
+      }
+      // this statement will only be reached if no passed regexes match the current line
+      // add to unparseable list if it is not only whitespace
+      if (line.trim()) {
+        identified['unparseable'].push(htmlEncode(line));
+      }
     }
+    return identified;
 
-    // Parse for MTGO/TappedOut style decks
-    else if (mtgoRE.exec(deckmain[i]) != null) {
-      quantity = mtgoRE.exec(deckmain[i])[1];
-      card = mtgoRE.exec(deckmain[i])[2];
-
-      if (in_sb) {  // TappedOut style Sideboard listing
-        recognizeCard(card, quantity, 'side');
+    // Returns an HTML-safe string (to avoid XSS)
+    // Accepts a string
+    // Returns a string with HTML-unsafe entities escaped
+    function htmlEncode(string) {
+      return string.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    // Finds the card object from the global cards object
+    // Accepts a card name string
+    // Returns the card's object if found, or null if not found
+    function getCard(name) {
+      name = name.toLowerCase();
+      name = name.replace('\u00e6', 'ae');
+      if (cards.hasOwnProperty(name)) {
+        return cards[name];
       } else {
-        recognizeCard(card, quantity);
+        return null;
       }
     }
-
-    // Parse for MTGO style sideboard cards
-    else if (mtgosbRE.exec(deckmain[i]) != null) {
-      quantity = mtgosbRE.exec(deckmain[i])[1];
-      card = mtgosbRE.exec(deckmain[i])[2];
-
-      recognizeCard(card, quantity, 'side');
-    }
-
-    // If we see 'Sideboard:', then we're in the TappedOut style sideboard entries from now on
-    else if (tosbRE.test(deckmain[i])) { in_sb = true; }
-
-    // Could not be parsed, store in appropriate array
-    else {
-      addUnparseable(deckmain[i]);
-    }
   }
-
-  // Now we get to do the same for the sideboard, but we only have to worry about TCG/MTGO style entries
-  for (i = 0; i < deckside.length; i++) {
-    // Parse for MTGO/TappedOut style decks
-    if (mtgoRE.exec(deckside[i]) != null) {
-      quantity = mtgoRE.exec(deckside[i])[1];
-      card = mtgoRE.exec(deckside[i])[2];
-
-      recognizeCard(card, quantity, 'side');
+  // Adds a card object to a given deck list (new addition or updates an already-present quantity)
+  // Accepts a deck list (array of card objects) and a card object
+  // Returns the deck after adding the card or updating the quantity of the already-present card
+  // Alternatively, if newCard is a string, simply adds the string to the deck list (used for identified['unrecognized'] and identified['unparseable'])
+  function list_add(list, newCard) {
+    if (typeof newCard === 'string') {
+      return list.push(newCard);
+    }
+    var cardName = newCard['n'],
+      cardIndex = listContainsCard(list, cardName);
+    if (cardIndex !== -1) {
+      list[cardIndex]['q'] += newCard['q'];
     } else {
-      // Could not be parsed, store in appropriate array
-      addUnparseable(deckside[i]);
+      // deep clone object when adding to list to avoid pointer issues when
+      // incrementing its size if it is duplicated
+      list.push(Object.assign({}, newCard));
     }
-  }
+    return list;
 
-  // Now we need to sort the deck lists, with the sideboard always being sorted alphabetically
-  if ( $('#sortorderfloat input[name=sortorder]:checked').prop('id') == 'sortorder1' ) { // alpabetical
-    maindeck = sortDecklist(maindeck, 'alphabetically');
-    sideboard = sortDecklist(sideboard, 'alphabetically');
-  }
-  else if ( $('#sortorderfloat input[name=sortorder]:checked').prop('id') == 'sortorder2' ) { // CMC
-    maindeck = sortDecklist(maindeck, 'cmc');
-    sideboard = sortDecklist(sideboard, 'alphabetically');
-  }
-  else if ( $('#sortorderfloat input[name=sortorder]:checked').prop('id') == 'sortorder3' ) { // color
-    maindeck = sortDecklist(maindeck, 'color');
-    sideboard = sortDecklist(sideboard, 'alphabetically');
-  }
-  else if ( $('#sortorderfloat input[name=sortorder]:checked').prop('id') == 'sortorder4' ) { // numeric
-    maindeck = sortDecklist(maindeck, 'numerically');
-    sideboard = sortDecklist(sideboard, 'alphabetically');
-  }
-  else if ( $('#sortorderfloat input[name=sortorder]:checked').prop('id') == 'sortorder6' ) { // type
-    maindeck = sortDecklist(maindeck, 'type');
-    sideboard = sortDecklist(sideboard, 'alphabetically');
-  }
-
-  // Check the card name against the card database. If it exists, add it to the
-  // appropriate list (main or side), otherwise add it to the unrecognized map.
-  function recognizeCard(card, quantity, list) {
-    list = list || 'main';
-    var aeloc = card.toLowerCase().indexOf('ae');
-
-    if (aeloc != -1) {
-      recognized = objectHasPropertyCI(cards, card.slice(0, aeloc)+'\u00e6'+card.slice(aeloc+2)) ||
-      objectHasPropertyCI(cards, card);;
-    }
-    else { recognized = objectHasPropertyCI(cards, card); }
-
-    // Always add the card to the list, regardless of if the card is recognized
-    // Still, if not recognized, add it to its special dictionary (unrecognized)
-
-    if (recognized) { list_add(list, recognized, quantity); }
-    else {
-      list_add(list, card, quantity);
-      unrecognized[htmlEncode(card)] = 1;
-    }
-  }
-
-  // add the passed string to the unparseable array if it isn't empty or entirely whitespace
-  function addUnparseable(line) {
-    // only store if it's not a falsey value (empty string, etc.)
-    // or entirely composed of whitespace
-    if (htmlEncode(line) && !htmlEncode(line).match(/^\s+$/)) {
-      unparseable.push(htmlEncode(line));
-    }
-  }
-
-  // Case-insensitive property search, modified from:
-  // http://stackoverflow.com/a/12484507/540162
-  // Returns property value (properly-capitalized card name) if found, false otherwise
-  function objectHasPropertyCI(obj, val) {
-    for (var p in obj) {
-      if (obj.hasOwnProperty(p) && p.toLowerCase() === val.toLowerCase()) {
-        return obj[p].n;
+    // Finds the index of a card name within the given deck list
+    // Accepts a deck list (array of card objects) and a card name string
+    // Returns the index of the card, if found, or -1 otherwise
+    function listContainsCard(list, cardName) {
+      for (var i = 0; i < list.length; i++) {
+        if (list[i]['n'] === cardName) {
+          return i;
+        }
       }
+      return -1;
     }
-    return false;
+  }
+  // Merges list objects
+  // Accepts two list objects (see lists of parseDecklist() for reference)
+  // Returns a single list with the items of b's list added to a's lists using list_add()
+  function list_merge(a, b) {
+    var list = {};
+    for (const keyA in a) {
+      if (!list.hasOwnProperty(keyA)) {
+        list[keyA] = a[keyA];
+      }
+      b[keyA].forEach(function (card) {
+        list_add(list[keyA], card);
+      });
+    }
+    return list;
+  }
+  // A uniqueness filtering function for use in array.filter()
+  // Returns true only for unique values (the first value found for any duplicates)
+  function onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
   }
 }
 
+// Sorts a given deck list
+// Accepts a deck list (array of card objects) and an optional sort order
+// If no order is passed, it is read from the sort order input on the page
+// Returns the deck list after being sorted via the given order
 function sortDecklist(deck, sortorder) {
+  let formsortorder = $('#sortorderfloat input[name=sortorder]:checked').prop('id').replace('sort-', '');
+  // to allow the function to be mappable, we force non-string "sortorder" values to default to user-entered sort order
+  sortorder = typeof sortorder === 'string' ? sortorder || formsortorder : formsortorder;
 
-  // Sort the decklist alphabetically, if chosen
-  if ( sortorder == 'alphabetically' ) {
-
-    // Add a case insensitive field to sort by
-    for (i = 0; i < deck.length; i++) { deck[i] = [ deck[i][0].toLowerCase(), deck[i][0], deck[i][1] ]; }
-
-    deck.sort();
-
-    // After sorting is done, we can remove the lower case index
-    for (i = 0; i < deck.length; i++) { deck[i] = deck[i].splice(1, 2); }
+  if (sortorder === 'original') {
+    return deck;
+  } else if (sortorder === 'alphabetical') {
+    deck.sort(alphabeticalCardSort);
+  } else if (sortorder === 'cmc') {
+    deck.sort(cmcCardSort);
+  } else if (sortorder === 'color') {
+    deck.sort(colorCardSort);
+  } else if (sortorder === 'numeric') {
+    deck.sort(numericCardSort);
+  } else if (sortorder === 'type') {
+    deck.sort(typeCardSort);
+  } else {
+    console.error('Unrecognized sort order passed: ' + sortorder + ', no deck sorting will be performed.');
   }
+  return deck;
 
-  // Sort the decklist by color, if chosen
-  // White = A, Blue = B, Black = C, Red = D, Green = E, Gold = F, Artifact = G , Unknown = X, Land = Z
-  else if ( sortorder == 'color' ) {
-    var color_to_cards = {};
+  // sort functions
 
-    for (i = 0; i < deck.length; i++) {
-
-      // We're going to search by lower case
-      var lcard = deck[i][0].toLowerCase();
-
-      // Grab the card's color
-      if (lcard in cards) { color = cards[ lcard ]['c']; }
-      else { color = 'X'; } // Unknown
-
-      // Create the color subarray
-      if ( !(color in color_to_cards ) ) { color_to_cards[color] = []; }
-
-      // Fix the Aetherling issue until the PDF things supports it
-      lcard = lcard.replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
-      deck[i][0] = deck[i][0].replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
-
-      // Add the card to that array, including lower-case (only used for sorting)
-      color_to_cards[color].push( [ lcard, deck[i][0], deck[i][1] ] );
-
+  // sort cards alphabetically
+  function alphabeticalCardSort(a, b) {
+    var cardA = a['n'].toLowerCase(),
+      cardB = b['n'].toLowerCase();
+    if (cardA > cardB) {
+      return 1;
+    } else if (cardA < cardB) {
+      return -1;
     }
-
-    // Get the list of colors in the deck
-    color_to_cards_keys = Object.keys(color_to_cards).sort();
-
-    // Sort each subcolor, then append them to the final array
-    deck = []
-    for (i = 0; i < color_to_cards_keys.length; i++) {
-      // Push a blank entry onto deck (to separate colors)
-      // unless the deck is empty
-      if (deck.length !== 0) {
-        deck.push(['', 0]);
-      }
-
-      color = color_to_cards_keys[i];
-
-      color_to_cards[ color ].sort();   // color_to_cards['A']
-
-      for (j = 0; j < color_to_cards[color].length; j++) {
-        card = color_to_cards[color][j][1];
-        quantity = color_to_cards[color][j][2];
-
-        deck.push([card, quantity]);
-      }
-    }
-
-    // We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd column
-    if (deck.length > 31) {
-      if (deck[31][1] == 0) {
-        deck.splice(31, 1);
-      }
-    }
+    return 0;
   }
-
-  // Sort the decklist by CMC, if chosen
-  else if ( sortorder == 'cmc' ) {
-    var cmc_to_cards = {}
-
-    for (i = 0; i < deck.length; i++) {
-
-      // We're going to search by lower case
-      var lcard = deck[i][0].toLowerCase();
-
-      // Grab the card's cmc
-      if (lcard in cards) { cmc = cards[ lcard ]['m']; }
-      else { cmc = 100; } // Unknown
-
-      // Convert the CMC to a string, and pad zeroes (grr Javascript)
-      cmc = cmc.toString();
-      if ( cmc.length == 1 ) { cmc = '00' + cmc; }
-      if ( cmc.length == 2 ) { cmc = '0' + cmc; }
-
-      // Create the cmc subarray
-      if ( !(cmc in cmc_to_cards ) ) { cmc_to_cards[cmc] = []; }
-
-      // Fix the Aetherling issue until the PDF things supports it
-      lcard = lcard.replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
-      deck[i][0] = deck[i][0].replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
-
-      // Add the card to that array, including lower-case (only used for sorting)
-      cmc_to_cards[cmc].push( [ lcard, deck[i][0], deck[i][1] ] );
-
-    }
-
-    // Get the list of CMCs in the deck
-    cmc_to_cards_keys = Object.keys(cmc_to_cards).sort();
-
-    // Sort each CMC, then append them to the final array
-    deck = []
-    for (i = 0; i < cmc_to_cards_keys.length; i++) {
-      // Push a blank entry onto deck (to separate CMCs)
-      // unless the deck is empty
-      if (deck.length !== 0) {
-        deck.push(['', 0]);
-      }
-
-      cmc = cmc_to_cards_keys[i];
-
-      cmc_to_cards[ cmc ].sort();   // cmc_to_cards[3]
-
-      for (j = 0; j < cmc_to_cards[cmc].length; j++) {
-        card = cmc_to_cards[cmc][j][1];
-        quantity = cmc_to_cards[cmc][j][2];
-
-        deck.push([card, quantity]);
-      }
-    }
-
-    // We must clear out the 32nd entry, if it's blank, as it's at the top of the 2nd column
-    if (deck.length > 31) {
-      if (deck[31][1] == 0) {
-        deck.splice(31, 1);
-      }
-    }
+  // sort by CMC, then alphabetically
+  function cmcCardSort(a, b) {
+    var cmcA = a['m'] || 100,
+      cmcB = b['m'] || 100;
+    return cmcA - cmcB || alphabeticalCardSort(a, b);
   }
-
-  // Sort the decklist numerically, if chosen
-  else if ( sortorder == 'numerically' ) {
-
-    // Add a case insensitive field, swap order around
-    for (i = 0; i < deck.length; i++) {
-      deck[i] = [ deck[i][1], deck[i][0].toLowerCase(), deck[i][0] ]
-    }
-
-    deck.sort();
-
-    // After sorting is done, we can remove the lower case index
-    for (i = 0; i < deck.length; i++) { deck[i] = [ deck[i][2], deck[i][0] ] }
-  }
-
-  else if ( sortorder == 'type' ) {
-
-    var type_to_cards = {}
-
-    for (i = 0; i < deck.length; i++) {
-
-      // We're going to search by lower case
-      var lcard = deck[i][0].toLowerCase();
-
-      // Grab the card's type
-      if (lcard in cards) { type = cards[ lcard ]['t']; }
-      else { type = 'z'; } // Unknown
-
-      // Create the type subarray
-      if ( !(type in type_to_cards ) ) { type_to_cards[type] = []; }
-
-      // Fix the Aetherling issue until the PDF things supports it
-      lcard = lcard.replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
-      deck[i][0] = deck[i][0].replace('\u00c6', 'Ae').replace('\u00e6', 'ae');
-
-      // Add the card to that array, including lower-case (only used for sorting)
-      type_to_cards[type].push( [ lcard, deck[i][0], deck[i][1] ] );
-
-    }
-
-    // Get the list of types in the deck
-    type_to_cards_keys = Object.keys(type_to_cards).sort();
-
-    // Sort each CMC, then append them to the final array
-    deck = []
-    for (i = 0; i < type_to_cards_keys.length; i++) {
-      // Push a blank entry onto deck (to separate types)
-      // unless the deck is empty
-      if (deck.length !== 0) {
-        deck.push(['', 0]);
-      }
-
-      type = type_to_cards_keys[i];
-
-      type_to_cards[ type ].sort();
-
-      for (j = 0; j < type_to_cards[type].length; j++) {
-        card = type_to_cards[type][j][1];
-        quantity = type_to_cards[type][j][2];
-
-        deck.push([card, quantity]);
-      }
-    }
-  }
-
-  // Get the card's true English name (ignoring any particular capitalization that someone may have done)
-  for (i = 0; i < deck.length; i++) {
-    var lcard = deck[i][0].toLowerCase()
-    if (cards[ lcard ] != undefined) {
-      deck[i][0] = cards[ lcard ]['n']
-    }
-  }
-
-  // Return the deck
-  return(deck);
-
-}
-
-// Stub to simplify updating deck and sideboard counts
-// Adds a new entry for unique entries, increments existing entries for duplicates
-function list_add(type, card, quantity) {
-  if (type === 'main') {
-    cardIndex = listContainsCard(maindeck,card);
-    if (cardIndex !== -1) {
-      // arggh, strings!
-      maindeck[cardIndex][1] = parseInt(maindeck[cardIndex][1]) + parseInt(quantity) + '';
+  // sort by color of cards, then alphabetically
+  function colorCardSort(a, b) {
+    var colorA = a['c'] || 'X',
+      colorB = b['c'] || 'X';
+    if (colorA > colorB) {
+      return 1;
+    } else if (colorA < colorB) {
+      return -1;
     } else {
-      maindeck.push([card, quantity]);
+      return alphabeticalCardSort(a, b);
     }
-    maindeck_count += parseInt(quantity);
-  } else if (type === 'side') {
-    cardIndex = listContainsCard(sideboard,card);
-    if (cardIndex !== -1) {
-      // arggh, strings!
-      sideboard[cardIndex][1] = parseInt(sideboard[cardIndex][1]) + parseInt(quantity) + '';
-    } else {
-      sideboard.push([card, quantity]);
-    }
-    sideboard_count += parseInt(quantity);
   }
-
-  // Returns the index of the card:quantity pair within the given list, or -1 if not found
-  function listContainsCard(list, card) {
-    for (j=0; j < list.length; j++) {
-      if (list[j][0] === card) {
-        return j;
-      }
+  // sort by quantity of cards, then alphabetically
+  function numericCardSort(a, b) {
+    var numA = a['q'],
+      numB = b['q'];
+    if (numA > numB) {
+      return 1;
+    } else if (numA < numB) {
+      return -1;
+    } else {
+      return alphabeticalCardSort(a, b);
     }
-    return -1;
+  }
+  // sort by type, then alphabetically
+  function typeCardSort(a, b) {
+    var typeA = a['t'] || '9',
+      typeB = b['t'] || '9';
+    if (typeA > typeB) {
+      return 1;
+    } else if (typeA < typeB) {
+      return -1;
+    } else {
+      return alphabeticalCardSort(a, b);
+    }
   }
 }
 
-function htmlEncode(string) {
-  return string.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// Add spacers between decklist sections
+// Accepts a (presumably sorted) decklist (array of card objects) and an optional section type to separate sections by
+// If no section type is passed, it is read from the sort order input on the page
+// Returns a decklist that contains the argument's cards with separators between sections as defined by sectionType
+function sectionDecklist(deck, sectionType) {
+  let formSectionType = $('#sortorderfloat input[name=sortorder]:checked').prop('id').replace('sort-', '');
+  // to allow the function to be mappable, we force non-string "sectionType" values to default to user-entered sort order
+  sectionType = typeof sectionType === 'string' ? sectionType || formSectionType : formSectionType;
+
+  if (sectionType === 'cmc') {
+    return addSections(deck, 'm');
+  } else if (sectionType ==='color') {
+    return addSections(deck, 'c');
+  } else if (sectionType === 'type') {
+    return addSections(deck, 't');
+  } else {
+    // no-op
+    return deck;
+  }
+
+  // Adds spacers based on delimiters
+  // See sectionDecklist(), except delimiter is the card property name (eg. 'c', not 'color') and is not optional
+  function addSections(list, delimiter) {
+    var numAdded = 0,
+      listLength = list.length;
+    for (var i = 1; i < listLength; i++) {
+      var index = i + numAdded,
+        emptyCard = { n: '', q: 0 };
+      if (list[index][delimiter] !== list[index - 1][delimiter]) {
+        list.splice(index, 0, emptyCard);
+        numAdded++;
+      }
+    }
+    return list;
+  }
+}
+
+// Accepts a deck list (array of card objects)
+// Returns a count of number of cards in a given deck
+function getDeckCount(deck) {
+  var count = 0;
+  Object.values(deck).forEach(function(card) {
+    count += card['q'];
+  });
+  return count;
+}
+
+// Filters a deck by a given field for some set of allowed values
+// Accepts a deck list (array of card objects), a card field, an allowed value
+// or array of allowed values, and an optional mode--"include" or "exclude" (default is "include")
+// Returns the filtered deck list, only including (or excluding) the given field values
+function filterDeckByFields(deck, field, values, mode = 'include') {
+  if (!Array.isArray(values)) {
+    values = [values];
+  }
+  return deck.filter(function(card) {
+    let include = false;
+    if (card.hasOwnProperty(field) && values.includes(card[field])) {
+      include = true;
+    }
+    if (mode === 'exclude') {
+      include = !include;
+    }
+    return include;
+  });
 }
