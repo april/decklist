@@ -1,7 +1,7 @@
 decklist
 ========
 
-The code behind decklist.org, which generates DCI Registration Sheets.
+The code behind [decklist.org](https://www.decklist.org), which generates DCI Registration Sheets.
 
 ## Direct Linking
 
