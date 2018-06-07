@@ -1,7 +1,9 @@
 #!/bin/sh
 
+set -e
+
 # Clean up a bit
-rm -f *.js *.zip
+rm -f -- *.js *.zip
 
 curl http://mtgjson.com/json/AllCards-x.json.zip > AllCards-x.json.zip
 unzip AllCards-x.json.zip
@@ -10,8 +12,7 @@ unzip AllCards-x.json.zip
 ./parsecards.py
 
 # Minify
-java -jar ../../tools/yuicompressor-2.4.8.jar -o '.js$:-min.js' *.js
+java -jar ../../tools/yuicompressor-2.4.8.jar -o '.js$:-min.js' -- *.js
 
 # Clean up a bit
-rm AllCards*
-rm decklist-cards.js
+rm AllCards* decklist-cards.js
