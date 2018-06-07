@@ -1,6 +1,5 @@
 /* eslint-env browser */
-/* global $, jQuery, jsPDF, DCI */
-/* global parseDecklist, sortDecklist, sectionDecklist, getDeckCount, filterDeckByFields */ // decklist.js functions
+/* global $, jQuery, jsPDF, Decklist, DCI */
 /* global logo, futcreaturelogo, futsorcerylogo, futlandlogo, futmultiplelogo, scglogo */
 
 // global timeout filters
@@ -44,7 +43,7 @@ function pdfChangeWait() {
   // Attempt to parse the decklists and validate input every 400ms
   if (decklistChangeTimer) { clearTimeout(decklistChangeTimer); }
   decklistChangeTimer = setTimeout(function() {
-    const parsedInput = parseDecklist();
+    const parsedInput = Decklist.parse();
     validateInput(parsedInput);
   }, 400);
 
@@ -169,9 +168,9 @@ function generateSCGDecklist(parsedInput) {
 
   // Create deck variables
   const maindeck = parsedInput['main'],
-    maindeck_count = getDeckCount(maindeck),
-    sideboard = sortDecklist(parsedInput['side'], 'alphabetical'),
-    sideboard_count = getDeckCount(sideboard),
+    maindeck_count = Decklist.count(maindeck),
+    sideboard = Decklist.sort(parsedInput['side'], 'alphabetical'),
+    sideboard_count = Decklist.count(sideboard),
     letter_page_h = 792; // width is 612pt but not referenced, so no variable
 
   // Set PDF variables
@@ -310,9 +309,9 @@ function generateSCGDecklist(parsedInput) {
   // creature, spells, and lands maindeck sections
 
   const maindeck_sections = {
-      'CREATURES': filterDeckByFields(maindeck, 't', '2'),
-      'SPELLS': filterDeckByFields(maindeck, 't', ['1', '2'], 'exclude'),
-      'LANDS': filterDeckByFields(maindeck, 't', '1'),
+      'CREATURES': Decklist.filter(maindeck, 't', '2'),
+      'SPELLS': Decklist.filter(maindeck, 't', ['1', '2'], 'exclude'),
+      'LANDS': Decklist.filter(maindeck, 't', '1'),
     },
     maindeck_section_title_x_offsets = {
       'CREATURES': pxToPt(121.44),
@@ -335,7 +334,7 @@ function generateSCGDecklist(parsedInput) {
     rows = 15;
   // sort and add separators to deck sections
   Object.keys(maindeck_sections).forEach(function (key) {
-    maindeck_sections[key] = sectionDecklist(sortDecklist(maindeck_sections[key]));
+    maindeck_sections[key] = Decklist.section(Decklist.sort(maindeck_sections[key]));
   });
 
   // draw sections and deck entries
@@ -351,7 +350,7 @@ function generateSCGDecklist(parsedInput) {
     // section total
     scgdl.setFontSize(section_total_font_size);
     scgdl.setFontStyle('bold');
-    scgdl.text(getDeckCount(deck_section).toString(),
+    scgdl.text(Decklist.count(deck_section).toString(),
                section_total_text_x,
                section_total_text_y,
                null, null, 'center');
@@ -701,10 +700,10 @@ function generateStandardDecklist(parsedInput) {
   let dl = new jsPDF('portrait', 'pt', 'letter');
 
   // Create deck variables
-  const maindeck = sectionDecklist(sortDecklist(parsedInput['main'])),
-    maindeck_count = getDeckCount(maindeck),
-    sideboard = sortDecklist(parsedInput['side'], 'alphabetical'),
-    sideboard_count = getDeckCount(sideboard);
+  const maindeck = Decklist.section(Decklist.sort(parsedInput['main'])),
+    maindeck_count = Decklist.count(maindeck),
+    sideboard = Decklist.sort(parsedInput['side'], 'alphabetical'),
+    sideboard_count = Decklist.count(sideboard);
 
   // Add the logo
   dl.addImage(logo, 'JPEG', 27, 54, 90, 32);
@@ -982,7 +981,7 @@ function generateDecklistPDF(outputtype = 'dataurlstring') {
   }
 
   // Parse the deck list
-  const parsedInput = parseDecklist();
+  const parsedInput = Decklist.parse();
 
   // Validate the input
   validateInput(parsedInput);
@@ -1028,9 +1027,9 @@ function validateInput(parsedLists) {
     'deckside': []
   };
   const maindeck = parsedLists['main'],
-    maindeck_count = getDeckCount(maindeck),
+    maindeck_count = Decklist.count(maindeck),
     sideboard = parsedLists['side'],
-    sideboard_count = getDeckCount(sideboard),
+    sideboard_count = Decklist.count(sideboard),
     unrecognized = parsedLists['unrecognized'],
     unparseable = parsedLists['unparseable'];
 
@@ -1083,7 +1082,7 @@ function validateInput(parsedLists) {
   if (decksheetFormat === 'wotc') {
     if (maindeck.length > 44)                          { validate.deckmain.push({ error: 'toolarge' }); }
   } else if (decksheetFormat === 'scg') {
-    const maindeck_sections = [filterDeckByFields(maindeck, 't', '2'), filterDeckByFields(maindeck, 't', ['1', '2'], 'exclude'), filterDeckByFields(maindeck, 't', '1')].map(sortDecklist).map(sectionDecklist);
+    const maindeck_sections = [Decklist.filter(maindeck, 't', '2'), Decklist.filter(maindeck, 't', ['1', '2'], 'exclude'), Decklist.filter(maindeck, 't', '1')].map(Decklist.sort).map(Decklist.section);
     if (maindeck_sections.some(function(arr) { return arr.length > 15; })) {
       validate.deckmain.push({ error: 'sectiontoolarge' });
     }

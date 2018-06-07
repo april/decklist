@@ -1,3 +1,5 @@
+/* exported DCI */
+
 var DCI = {
   primes: [43,47,53,71,73,31,37,41,59,61,67,29], // arbitrary primes used for the checksum - thanks @luma
   isValid: function(number) { // check if DCI number is valid
