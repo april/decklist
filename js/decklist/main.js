@@ -75,6 +75,8 @@ String.prototype.capitalize = function() {
 
 // Parse the GET attributes, locking out fields as needed
 function parseGET() {
+  // disable the fields below if the GET parameter `disablefields` is set to true
+  const disableFields = $._GET['disablefields'] === 'true' ? true : false;
   const params = ['firstname', 'lastname', 'dcinumber', 'event', 'eventdate', 'eventlocation', 'deckmain', 'deckside'];
 
   // check for event, eventdate, or eventlocation and lock down those input fields
@@ -85,7 +87,7 @@ function parseGET() {
       $(field).val( $._GET[param] );    // set it to the GET variable
 
       if ((param !== 'deckmain') && (param !== 'deckside')) {
-        $(field).prop('disabled', true);  // disable all decklist fields that are in the URL
+        $(field).prop('disabled', disableFields);  // disable all decklist fields that are in the URL
       }
     }
   });
