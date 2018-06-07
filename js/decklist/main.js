@@ -1,4 +1,4 @@
-/* jslint browser: true */
+/* eslint-env browser */
 /* global $, jQuery, jsPDF, DCI */
 /* global parseDecklist, sortDecklist, sectionDecklist, getDeckCount, filterDeckByFields */ // decklist.js functions
 /* global logo, futcreaturelogo, futsorcerylogo, futlandlogo, futmultiplelogo, scglogo */
