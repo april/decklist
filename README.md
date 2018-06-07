@@ -15,7 +15,7 @@ Interested in directly linking to [decklist.org](https://www.decklist.org) for y
 - **`eventlocation`**: the physical location of the event (e.g. Minneapolis Convention Center)
 - **`deckmain`**: the deck itself; this can be in any format the website understands (use `%0A` for newlines)
 - **`deckside`**: the side itself; this can be in any format the website understands (use `%0A` for newlines)
-- **`disablefields`**: prevent users from editing the fields above
+- **`disableediting`**: prevent users from editing the fields above
 - **`logo`**: please contact [april@pokeinthe.io](mailto:april@pokeinthe.io), if you'd like to replace the DCI logo
 
 Please note that any field not specifically set will simply be left blank on the form.
