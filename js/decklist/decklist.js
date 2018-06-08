@@ -12,8 +12,8 @@
 // }
 var Decklist = {
   parse: function(deckmain, deckside) {
-    deckmain = deckmain || $('#deckmain'), deckmain = deckmain.val().split('\n'),
-    deckside = deckside || $('#deckside'), deckside = deckside.val().split('\n');
+    deckmain = deckmain || $('#deckmain').val(), deckmain = deckmain.split('\n'),
+    deckside = deckside || $('#deckside').val(), deckside = deckside.split('\n');
     var lists = {
       main: [],
       side: [],
@@ -83,7 +83,7 @@ var Decklist = {
           if (card) {
             card['q'] = quantity;
           } else {
-            // car is not recognized; create a dummy card object
+            // card is not recognized; create a dummy card object
             var encodedCardName = htmlEncode(cardName);
             card = {
               'n': encodedCardName,
