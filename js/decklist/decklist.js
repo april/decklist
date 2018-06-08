@@ -83,7 +83,7 @@ var Decklist = {
           if (card) {
             card['q'] = quantity;
           } else {
-            // car is not recognized; create a dummy card object
+            // card is not recognized; create a dummy card object
             var encodedCardName = htmlEncode(cardName);
             card = {
               'n': encodedCardName,
