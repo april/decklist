@@ -121,6 +121,11 @@ function parseGET() {
     }
   });
 
+  // switch to the proper decksheet; doing it this way in case we ever support other formats
+  if ($._GET['decksheet'] !== undefined) {
+    $('#decksheet-' + $._GET['decksheet']).click();
+  }
+
   // make the upload button visible, if uploadURL exists
   if ($._GET[ 'uploadURL' ] !== undefined) {
     $('#upload').css('display', 'inline-block');

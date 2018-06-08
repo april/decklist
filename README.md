@@ -13,6 +13,7 @@ Interested in directly linking to [decklist.org](https://www.decklist.org) for y
 - **`event`**: the name of the event (e.g. Grand Prix Minneapolis)
 - **`eventdate`**: the date of the event (e.g. 2018-12-31)
 - **`eventlocation`**: the physical location of the event (e.g. Minneapolis Convention Center)
+- **`decksheet`**: the deck sheet to use (either `wotc` or `scg`, defaults to `wotc`)
 - **`deckmain`**: the deck itself; this can be in any format the website understands (use `%0A` for newlines)
 - **`deckside`**: the side itself; this can be in any format the website understands (use `%0A` for newlines)
 - **`disableediting`**: prevent users from editing the fields above
