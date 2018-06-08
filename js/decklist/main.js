@@ -1132,7 +1132,9 @@ function validateInput(parsedLists) {
         if (inCombinedList) {
           combinedList[i]['q'] += card['q'];
         } else {
-          combinedList.push(card);
+          // deep clone object when adding to list to avoid pointer issues when
+          // incrementing its size if it is duplicated
+          combinedList.push(Object.assign({}, card));
         }
       });
     });
