@@ -12,8 +12,8 @@
 // }
 var Decklist = {
   parse: function(deckmain, deckside) {
-    deckmain = deckmain || $('#deckmain'), deckmain = deckmain.val().split('\n'),
-    deckside = deckside || $('#deckside'), deckside = deckside.val().split('\n');
+    deckmain = deckmain || $('#deckmain').val(), deckmain = deckmain.split('\n'),
+    deckside = deckside || $('#deckside').val(), deckside = deckside.split('\n');
     var lists = {
       main: [],
       side: [],
