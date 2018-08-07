@@ -45,6 +45,7 @@ function pdfChangeWait() {
   decklistChangeTimer = setTimeout(function() {
     const parsedInput = Decklist.parse();
     validateInput(parsedInput);
+    $('#permalink').attr("href", generatePermalink());
   }, 400);
 
   // Wait 1500 milliseconds to generate a new PDF
@@ -76,7 +77,7 @@ String.prototype.capitalize = function() {
 function parseGET() {
   // disable the fields below if the GET parameter `disablefields` is set to true
   const disableEditing = $._GET['disableediting'] === 'true' ? true : false;
-  const params = ['firstname', 'lastname', 'dcinumber', 'event', 'eventdate', 'eventlocation', 'deckmain', 'deckside'];
+  const params = ['firstname', 'lastname', 'dcinumber', 'event', 'eventdate', 'eventlocation', 'deckmain', 'deckside', 'deckname', 'deckdesigner']
 
   // check for event, eventdate, or eventlocation and lock down those input fields
   params.forEach(function(param) {
@@ -972,6 +973,20 @@ function generateStandardDecklist(parsedInput) {
   dl.text('Judge:', 454, 766);
 
   return dl;
+}
+
+function generatePermalink() {
+  console.log("generatePermalink");
+  rv = 'https://decklist.org/?';
+
+  const params = ['firstname', 'lastname', 'dcinumber', 'event', 'eventdate', 'eventlocation', 'deckmain', 'deckside', 'deckname', 'deckdesigner'];
+  params.forEach(function(param) {
+    const field = '#' + param;
+    if ($(field).val().length > 0)
+      rv += param + '=' + encodeURIComponent($(field).val()) + '&';
+  })
+
+  return rv;
 }
 
 // Performs validation on user input and updates PDF
