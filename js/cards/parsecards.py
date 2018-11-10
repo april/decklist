@@ -99,6 +99,7 @@ for card in cards:
         ocards[ocard]['c'] = 'S'
         ocards[ocard]['m'] = 98 
         ocards[ocard]['n'] = name
+        ocards[ocard]['t'] = '3'
 
         legality = getLegalities(card, cards)
         if legality != "": ocards[ocard]['b'] = legality
