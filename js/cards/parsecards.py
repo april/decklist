@@ -9,32 +9,24 @@ import json
 # n (actual name) = 'true name nemesis' to 'True Name Nemesis'
 # t (type) = 1 = land, 2 = creature, 3 = instant or sorcery 4 = other
 
-FORMATS = ('Standard', 'Modern', 'Legacy')
+FORMATS = {
+    'standard': 's',
+    'modern': 'm',
+    'legacy': 'l'
+}
 
 def getLegalities(card, cards):
     # Let's figure out legalities
     banned = 'sml'
 
-    for legality in cards[card].get('legalities', []):
-        if legality.get('format') in FORMATS and legality.get('legality') != 'Banned':
-            banned = banned.replace(legality.get('format')[0].lower(), '')
+    for gameformat, abbrevation in FORMATS.items():
+        if cards[card].get('legalities', {}).get(gameformat) == 'Legal':
+            banned = banned.replace(abbrevation, '')
 
-#    if 'legalities' not in cards[card]: pass
- #   else:
-#
-        # If it doesn't have an entry in the JSON file, that means it's outside the format; we'll call that banned
-    #    if 'Standard' not in cards[card]['legalities']: cards[card]['legalities']['Standard'] = "Banned"
-     #   if 'Modern'   not in cards[card]['legalities']: cards[card]['legalities']['Modern'] =   "Banned"
-      #  if 'Legacy'   not in cards[card]['legalities']: cards[card]['legalities']['Legacy'] =   "Banned"
-
-        # Now to see if we should add them to our list
-       # if cards[card]['legalities']['Standard'] == "Banned": banned += "s"
-       # if cards[card]['legalities']['Modern']   == "Banned": banned += "m"
-       # if cards[card]['legalities']['Legacy']   == "Banned": banned += "l"
     return(banned)
 
 # Open the JSON file
-jsonfh = open("AllCards-x.json", "r")
+jsonfh = open("AllCards.json", "r")
 
 # Load all the cards into a giant dictionary
 cards = json.load(jsonfh)
