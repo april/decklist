@@ -174,7 +174,7 @@ function generateSCGDecklist(parsedInput) {
   // Create deck variables
   const maindeck = parsedInput['main'],
     maindeck_count = Decklist.count(maindeck),
-    sideboard = Decklist.sort(parsedInput['side'], 'alphabetical'),
+    sideboard = Decklist.sort(parsedInput['side']),
     sideboard_count = Decklist.count(sideboard),
     letter_page_h = 792; // width is 612pt but not referenced, so no variable
 
@@ -707,7 +707,7 @@ function generateStandardDecklist(parsedInput) {
   // Create deck variables
   const maindeck = Decklist.section(Decklist.sort(parsedInput['main'])),
     maindeck_count = Decklist.count(maindeck),
-    sideboard = Decklist.sort(parsedInput['side'], 'alphabetical'),
+    sideboard = Decklist.sort(parsedInput['side']),
     sideboard_count = Decklist.count(sideboard);
 
   // Add the logo
