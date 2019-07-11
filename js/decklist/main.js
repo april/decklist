@@ -17,6 +17,7 @@ $(document).ready(function() {
   $('#eventdate').datepicker({ dateFormat: 'yy-mm-dd' }); // ISO-8601, woohoo
   $('#download').button();
   $('#upload').button();
+  $('#permalink').button();
   $('input[type=radio]').checkboxradio({
     icon: false
   });
@@ -36,6 +37,15 @@ $(document).ready(function() {
 
   // parse the GET parameters and set them, also generates preview (via event)
   parseGET();
+
+  // Need to populate an initial history state so the first popstate event
+  // has something to return to
+  history.replaceState(generatePermalink(true), document.title, generatePermalink());
+  // and need to update our state whenever back/forward buttons are pushed.
+  window.onpopstate = function(event) {
+    parseUrlIntoGET(event.state);
+    parseGET();
+  }
 });
 
 // Blocks updates to the PDF
@@ -45,6 +55,10 @@ function pdfChangeWait() {
   decklistChangeTimer = setTimeout(function() {
     const parsedInput = Decklist.parse();
     validateInput(parsedInput);
+    if (generatePermalink(true) !== history.state) {
+      console.log("pushing new state " + generatePermalink(true));
+      history.pushState(generatePermalink(true), document.title, generatePermalink());
+    }
   }, 400);
 
   // Wait 1500 milliseconds to generate a new PDF
@@ -58,25 +72,33 @@ String.prototype.capitalize = function() {
 };
 
 // A way to get the GET parameters, setting them in an array called $._GET
+// url can be a string or a URL object (e.g. window.location)
+function parseUrlIntoDict(url) {
+  if (url === '') return {};
+  const a = new URL(url).search.substr(1).split('&');
+  const b = {};
+  for (let i = 0; i < a.length; ++i)
+  {
+    const p = a[i].split('=');
+    if (p.length !== 2) continue;
+    b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, ' '));
+  }
+  return b;
+}
+
+function parseUrlIntoGET(url) {
+  $._GET = parseUrlIntoDict(url);
+}
+
 (function ($) {
-  $._GET = (function(a) {
-    if (a === '') return {};
-    const b = {};
-    for (let i = 0; i < a.length; ++i)
-    {
-      const p = a[i].split('=');
-      if (p.length !== 2) continue;
-      b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, ' '));
-    }
-    return b;
-  })(window.location.search.substr(1).split('&'));
+  $._GET = parseUrlIntoDict(window.location);
 })(jQuery);
 
 // Parse the GET attributes, locking out fields as needed
 function parseGET() {
   // disable the fields below if the GET parameter `disablefields` is set to true
   const disableEditing = $._GET['disableediting'] === 'true' ? true : false;
-  const params = ['firstname', 'lastname', 'dcinumber', 'event', 'eventdate', 'eventlocation', 'deckmain', 'deckside'];
+  const params = ['firstname', 'lastname', 'dcinumber', 'event', 'eventdate', 'eventlocation', 'deckmain', 'deckside', 'deckname', 'deckdesigner']
 
   // check for event, eventdate, or eventlocation and lock down those input fields
   params.forEach(function(param) {
@@ -974,6 +996,19 @@ function generateStandardDecklist(parsedInput) {
   return dl;
 }
 
+function generatePermalink(includeBlank = false) {
+  rv = 'https://decklist.org/?';
+
+  const params = ['firstname', 'lastname', 'dcinumber', 'event', 'eventdate', 'eventlocation', 'deckmain', 'deckside', 'deckname', 'deckdesigner'];
+  params.forEach(function(param) {
+    const field = '#' + param;
+    if (includeBlank || $(field).val().length > 0)
+      rv += param + '=' + encodeURIComponent($(field).val()) + '&';
+  })
+
+  return rv;
+}
+
 // Performs validation on user input and updates PDF
 function generateDecklistPDF(outputtype = 'dataurlstring') {
   // clear the input timeout before we can generate the PDF
@@ -998,8 +1033,14 @@ function generateDecklistPDF(outputtype = 'dataurlstring') {
   if (outputtype === 'dataurlstring') {
     const domdl = dl.output('dataurlstring');
 
+    // If we set the 'src' attr while the iframe is still part of the DOM, we generate
+    // a spurious history event.
+    var iframe = $('iframe');
+    var container = iframe.parent();
+    iframe.remove();
     // Put the DOM into the live preview iframe
-    $('iframe').attr('src', domdl);
+    iframe.attr('src', domdl);
+    container.append(iframe);
   }
   else if (outputtype === 'raw') {
     const rawPDF = dl.output();

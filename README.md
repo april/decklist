@@ -16,6 +16,8 @@ Interested in directly linking to [decklist.org](https://www.decklist.org) for y
 - **`decksheet`**: the deck sheet to use (either `wotc` or `scg`, defaults to `wotc`)
 - **`deckmain`**: the deck itself; this can be in any format the website understands (use `%0A` for newlines)
 - **`deckside`**: the side itself; this can be in any format the website understands (use `%0A` for newlines)
+- **`deckname`**: the name of the deck (e.g. "RUG Twin")
+- **`deckdesigner`**: the name of the designer of the decklist
 - **`disableediting`**: prevent users from editing the fields above
 - **`logo`**: please contact [april@pokeinthe.io](mailto:april@pokeinthe.io), if you'd like to replace the DCI logo
 
