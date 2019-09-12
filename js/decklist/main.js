@@ -76,7 +76,18 @@ String.prototype.capitalize = function() {
 function parseGET() {
   // disable the fields below if the GET parameter `disablefields` is set to true
   const disableEditing = $._GET['disableediting'] === 'true' ? true : false;
-  const params = ['firstname', 'lastname', 'dcinumber', 'event', 'eventdate', 'eventlocation', 'deckmain', 'deckside'];
+  const params = [
+    'firstname',
+    'lastname',
+    'dcinumber',
+    'event',
+    'eventdate',
+    'eventlocation',
+    'deckname',
+    'deckdesigner',
+    'deckmain',
+    'deckside'
+  ];
 
   // check for event, eventdate, or eventlocation and lock down those input fields
   params.forEach(function(param) {
