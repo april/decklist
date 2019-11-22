@@ -29,7 +29,7 @@ var Decklist = {
       side: [
         /^\s*SB:\s*(\d+)\s+\[.*\]\s(.+?)\s*$/, // MWS, what an ugly format
         /^\s*SB:\s+(\d+)\s(.+?)\s*$/,          // Sideboard lines begin with SB:
-        /^\s*()?(.+?)\s*$/,                  // Single card
+        /^\s*()?(.+?)\s*$/,                    // Single card
       ],
     };
 
