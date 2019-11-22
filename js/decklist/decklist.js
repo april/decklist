@@ -24,10 +24,12 @@ var Decklist = {
       main: [
         /^\s*(\d+)\s+\[.*\]\s+(.+?)\s*$/,      // MWS, what an ugly format
         /^\s*(\d+)x*\s(.+?)\s*$/,              // MTGO deck format (4 Brainstorm) also TCG (4x Brainstorm)
+        /^\s*()?(.+?)\s*$/,                    // Single card
       ],
       side: [
         /^\s*SB:\s*(\d+)\s+\[.*\]\s(.+?)\s*$/, // MWS, what an ugly format
         /^\s*SB:\s+(\d+)\s(.+?)\s*$/,          // Sideboard lines begin with SB:
+        /^\s*()?(.+?)\s*$/,                  // Single card
       ],
     };
 
@@ -76,7 +78,7 @@ var Decklist = {
           }
 
           let result = re.exec(line),
-            quantity = parseInt(result[1]),
+            quantity = parseInt(result[1]) ? parseInt(result[1]) : 1,
             cardName = result[2],
             card = getCard(cardName);
           // add quantity field to card object
