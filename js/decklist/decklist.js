@@ -78,7 +78,7 @@ var Decklist = {
           }
 
           let result = re.exec(line),
-            quantity = parseInt(result[1]) ? parseInt(result[1]) : 1,
+            quantity = parseInt(result[1]) || 1,
             cardName = result[2],
             card = getCard(cardName);
           // add quantity field to card object
