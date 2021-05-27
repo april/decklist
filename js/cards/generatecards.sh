@@ -1,18 +1,17 @@
 #!/bin/sh
 
-set -e
-
 # Clean up a bit
-rm -f -- *.js *.zip
+rm -f *.js *.zip
 
-curl https://mtgjson.com/json/AllCards.json.zip > AllCards.json.zip
-unzip AllCards.json.zip
+curl https://mtgjson.com/api/v5/AtomicCards.json.zip > AtomicCards.json.zip
+unzip AtomicCards.json.zip
 
 # Parse out the giant JSON and make a much smaller one
 ./parsecards.py
 
 # Minify
-uglifyjs decklist-cards.js -c -m -o decklist-cards-min.js
+terser decklist-cards.js -o decklist-cards-min.js
 
 # Clean up a bit
-rm AllCards* decklist-cards.js
+rm AtomicCards*
+rm decklist-cards.js

@@ -9,24 +9,20 @@ import json
 # n (actual name) = 'true name nemesis' to 'True Name Nemesis'
 # t (type) = 1 = land, 2 = creature, 3 = instant or sorcery 4 = other
 
-FORMATS = {
-    'standard': 's',
-    'modern': 'm',
-    'legacy': 'l'
-}
+FORMATS = ('standard', 'modern', 'legacy')
 
-def getLegalities(card, cards):
+def getLegalities(face):
     # Let's figure out legalities
     banned = 'sml'
 
-    for gameformat, abbrevation in FORMATS.items():
-        if cards[card].get('legalities', {}).get(gameformat) == 'Legal':
-            banned = banned.replace(abbrevation, '')
+    for format in FORMATS:
+        if face.get('legalities', {}).get(format) == 'Legal':
+            banned = banned.replace(format[0].lower(), '')
 
     return(banned)
 
 # Open the JSON file
-jsonfh = open("AllCards.json", "r")
+jsonfh = open("AtomicCards.json", "r")
 
 # Load all the cards into a giant dictionary
 cards = json.load(jsonfh)
@@ -35,65 +31,73 @@ cards = json.load(jsonfh)
 ocards = {}
 
 # Okay, we need the colors but in a much shorter format
-for card in cards:
+for card in cards["data"].values():
+    # We only care about the first face
+    face = card[0]
+    is_flip = face["layout"] in ("transform", "modal_dfc")
 
     # We're going to store them in lowercase
-    ocard = card.lower()
+    ocard = face["faceName" if is_flip else "name"].lower()
 
     # Python's Unicode support sucks, as does everybodies.  Manually
     # replace the Ae to lower case
     ocard = ocard.replace(u'\xc6', u'\xe6')
 
     # Skip tokens
-    if cards[card]['layout'] == 'token': continue
+    if face['layout'] == 'token':
+        continue
 
     # Create an entry in the output dictionary
     ocards[ocard] = {}
 
     # Lands and (noncolored) artifacts are special
-    if 'Land' in cards[card]['types']:
+    if 'Land' in face['types']:
         ocards[ocard]['c'] = 'Z' # Sort lands last
-    elif (('Artifact' in cards[card]['types']) and ('colors' not in cards[card])):
+    elif (('Artifact' in face['types']) and ('colors' not in face)):
         ocards[ocard]['c'] = 'G'
 
     # Make the colors shorter
-    if ('colors' not in cards[card]): pass
-    elif len(cards[card]['colors']) > 1:      ocards[ocard]['c'] = 'F'    # gold
-    elif cards[card]['colors'] == ['White']:  ocards[ocard]['c'] = 'A'
-    elif cards[card]['colors'] == ['Blue']:   ocards[ocard]['c'] = 'B'
-    elif cards[card]['colors'] == ['Black']:  ocards[ocard]['c'] = 'C'
-    elif cards[card]['colors'] == ['Red']:    ocards[ocard]['c'] = 'D'
-    elif cards[card]['colors'] == ['Green']:  ocards[ocard]['c'] = 'E'
+    if ('colors' not in face): pass
+    elif len(face['colors']) > 1:      ocards[ocard]['c'] = 'F'    # gold
+    elif face['colors'] == ['White']:  ocards[ocard]['c'] = 'A'
+    elif face['colors'] == ['Blue']:   ocards[ocard]['c'] = 'B'
+    elif face['colors'] == ['Black']:  ocards[ocard]['c'] = 'C'
+    elif face['colors'] == ['Red']:    ocards[ocard]['c'] = 'D'
+    elif face['colors'] == ['Green']:  ocards[ocard]['c'] = 'E'
 
-    if   'Land'     in cards[card]['types']:  ocards[ocard]['t'] = '1'
-    elif 'Creature' in cards[card]['types']:  ocards[ocard]['t'] = '2'
-    elif 'Sorcery'  in cards[card]['types']:  ocards[ocard]['t'] = '3'
-    elif 'Instant'  in cards[card]['types']:  ocards[ocard]['t'] = '3'
-    else:                                     ocards[ocard]['t'] = '4'
+    if   'Land'     in face['types']:  ocards[ocard]['t'] = '1'
+    elif 'Creature' in face['types']:  ocards[ocard]['t'] = '2'
+    elif 'Sorcery'  in face['types']:  ocards[ocard]['t'] = '3'
+    elif 'Instant'  in face['types']:  ocards[ocard]['t'] = '3'
+    else:                              ocards[ocard]['t'] = '4'
 
     # Now try to deal with CMC
-    if 'cmc' not in cards[card]: ocards[ocard]['m'] = 99
-    else: ocards[ocard]['m'] = cards[card]['cmc']
+    if 'convertedManaCost' not in face: ocards[ocard]['m'] = 99
+    else: ocards[ocard]['m'] = face['convertedManaCost']
 
     # Add it into the file if the banned list isn't empty
-    legality = getLegalities(card, cards)
+    legality = getLegalities(face)
     if legality != "": ocards[ocard]['b'] = legality
 
     # And put the true name in there as well
-    ocards[ocard]['n'] = card
+    ocards[ocard]['n'] = face["faceName" if is_flip else "name"]
 
     # Now to handle split cards (ugh)
-    if 'names' in cards[card]:
-        name = " // ".join(cards[card]['names'])
-        ocard = name.lower().replace(u'\xc6', u'\xe6')   # Just like a real card
-
-        ocards[ocard] = {}
+    if ' // ' in ocard:
         ocards[ocard]['c'] = 'S'
-        ocards[ocard]['m'] = 98 
-        ocards[ocard]['n'] = name
+        ocards[ocard]['m'] = 98
 
-        legality = getLegalities(card, cards)
-        if legality != "": ocards[ocard]['b'] = legality
+    # if 'names' in face:
+    #     name = " // ".join(face['names'])
+    #     ocard = name.lower().replace(u'\xc6', u'\xe6')   # Just like a real card
+    #
+    #     ocards[ocard] = {}
+    #     ocards[ocard]['c'] = 'S'
+    #     ocards[ocard]['m'] = 98
+    #     ocards[ocard]['n'] = name
+    #
+    #     legality = getLegalities(face)
+    #     if legality != "": ocards[ocard]['b'] = legality
 
 
 # Print out the full list of cards
