@@ -33,7 +33,11 @@ ocards = {}
 # Okay, we need the colors but in a much shorter format
 for card in cards["data"].values():
     # We only care about the first face
-    face = card[0]
+    if 'side' not in card[0] or len(card) == 1:
+        face = card[0]
+    else:
+        face = card[0] if card[0]['side'] == 'a' else card[1]
+
     is_flip = face["layout"] in ("transform", "modal_dfc")
 
     # We're going to store them in lowercase
