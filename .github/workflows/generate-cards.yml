@@ -1,0 +1,19 @@
+name: Generate Cards
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+jobs:
+  generate-cards:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Install terser
+        run: npm i terser -g
+      - name: Run shell script
+        run: ./generatecards.sh
+        working-directory: ./js/cards/
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update card list
