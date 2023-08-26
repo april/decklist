@@ -948,9 +948,11 @@ function generateStandardDecklist(parsedInput) {
       }
     
       if (card) {
-        dl.text(card['q'].toString(), x, y);
-        dl.text(card['n'], x + 38, y);
+        let xOffset = (card['q'] > 9 && card['q'] < 100) ? 3 : 0;  // Check if 'n' is two digits
+        dl.text(card['q'].toString(), x  - xOffset, y);
+        dl.text(card['n'].toString(), x + 38, y);
       }
+    
     }
   
     x = 356, y = 182;
