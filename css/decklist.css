@@ -28,6 +28,7 @@
 	float: left;
 	font-size: 11px;
 	margin-top: 15px;
+	margin-bottom: 15px;
 	text-align: center;
 	width: 100%;
 }
@@ -38,6 +39,7 @@ a {
 body{
 	padding: 0px;
 	margin: 0px;
+	font-family: 'Roboto', sans-serif;
 }
 
 /* prettification */
@@ -172,7 +174,7 @@ h2 {
 }
 
 .statusmark {
-	font-family: Arial, serif;
+    font-family: 'Roboto', sans-serif;
 	font-size: 60px;
 	font-weight: bold;
 	height: 80px;
