@@ -102,28 +102,28 @@ function parseGET() {
     }
   });
 
-  // load the logo
-  if ($._GET['logo'] === undefined) { $._GET['logo'] = 'mtg'; } // if logo isn't specified, use the DCI logo
-
   // Load SCG logos
   const scglogos = ['FUTcreature', 'FUTland', 'FUTmultiple', 'FUTsorcery', 'starcitygames.com-logo-lores'];
   scglogos.forEach(function(logo) {
     const element = document.createElement('script');
 
-    element.src = 'images/' + logo + '.js';
+    element.src = 'images/logos/' + logo + '.js';
     element.type = 'text/javascript';
     element.id = 'logo';
 
     document.getElementsByTagName('head')[0].appendChild(element);
   });
 
-  const logos = ['mtg','dcilogo', 'legion', 'gpsanantonio'];
+  // load the wotc template logo
+  if ($._GET['logo'] === undefined) { $._GET['logo'] = 'mtg'; } // if logo isn't specified, use the MTG logo
+
+  const logos = ['mtg', 'dcilogo', 'legion', 'gpsanantonio', 'elojodeugin'];
 
   logos.forEach(function(logo) {
     if ($._GET['logo'] === logo) {
       const element = document.createElement('script');
 
-      element.src = 'images/' + logo + '.js';
+      element.src = 'images/logos/' + logo + '.js';
       element.type = 'text/javascript';
       element.id = 'logo';
       element.onload = function () { generateDecklistPDF(); };
