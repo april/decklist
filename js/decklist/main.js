@@ -79,7 +79,7 @@ function parseGET() {
   const params = [
     'firstname',
     'lastname',
-    'dcinumber',
+    //'dcinumber',
     'event',
     'eventdate',
     'eventlocation',
@@ -103,7 +103,7 @@ function parseGET() {
   });
 
   // load the logo
-  if ($._GET['logo'] === undefined) { $._GET['logo'] = 'dcilogo'; } // if logo isn't specified, use the DCI logo
+  if ($._GET['logo'] === undefined) { $._GET['logo'] = 'mtg'; } // if logo isn't specified, use the DCI logo
 
   // Load SCG logos
   const scglogos = ['FUTcreature', 'FUTland', 'FUTmultiple', 'FUTsorcery', 'starcitygames.com-logo-lores'];
@@ -117,7 +117,7 @@ function parseGET() {
     document.getElementsByTagName('head')[0].appendChild(element);
   });
 
-  const logos = ['dcilogo', 'legion', 'gpsanantonio'];
+  const logos = ['mtg','dcilogo', 'legion', 'gpsanantonio'];
 
   logos.forEach(function(logo) {
     if ($._GET['logo'] === logo) {
@@ -209,13 +209,14 @@ function generateSCGDecklist(parsedInput) {
       label_x_offset: pxToPt(289.152),
       required: true,
       required_x_offset: pxToPt(386.727),
-    },
+    }/*,
     'DCI NUMBER': {
       text: $('#dcinumber').val(),
       label_x_offset: pxToPt(554.486),
       required: false,
-    },
+    },*/
   };
+  
   Object.keys(monospaced_fields).forEach(function(key, i) {
     const field = monospaced_fields[key],
       fieldoffset = (i - 1) * 0.8,
@@ -726,16 +727,22 @@ function generateStandardDecklist(parsedInput) {
 
   // Create all the rectangles
 
+  dl.setFillColor(230, 230, 232);
+
   // Start with the top box, for deck designer, name, etc.
   dl.setLineWidth(1);
   dl.rect(135, 54, 441, 24);  // date + event
   dl.rect(135, 78, 441, 24);  // location + deck name
   dl.rect(355, 54, 221, 72);  // event + deck name + deck designer
+  dl.rect(552, 30, 24, 24, 'F');   // first letter
   dl.rect(552, 30, 24, 24);   // first letter
   dl.rect(445, 30, 55, 24);   // table number
 
+  dl.rect(27, 140, 24, 628, 'F');  // last name + first name fills
+  dl.rect(27, 140, 24, 449, 'F');  // first name fill
+
   dl.rect(27, 140, 24, 628);  // last name + first name + dci
-  dl.rect(27, 140, 24, 270);  // dci
+  //dl.rect(27, 140, 24, 270);  // dci
   dl.rect(27, 140, 24, 449);  // first name + dci
 
   dl.rect(250, 748, 56, 22); // total number main deck
@@ -752,10 +759,10 @@ function generateStandardDecklist(parsedInput) {
   dl.rect(320, 746, 260, 12); // status + status
 
   let y = 140;
-  while (y < 380) {
+  /*while (y < 380) {
     dl.rect(27, y, 24, 24);  // dci digits
     y += 24;
-  }
+  }*/
 
   // Now let's create a bunch of lines for putting cards on
   y = 186;
@@ -786,16 +793,16 @@ function generateStandardDecklist(parsedInput) {
   // Interleave user input for better copy+paste behavior
   // There are a ton of them, so this will be exciting
   dl.setFontSize(15);
-  dl.setFontStyle('bold');
-  dl.setFont('times'); // it's no Helvetica, that's for sure
+  dl.setFontStyle('normal');
+  dl.setFont('helvetica');
   dl.text('DECK REGISTRATION SHEET', 135, 45);
 
   dl.setFontSize(7);
   dl.setFontStyle('normal');
   dl.text('Table', 421, 40);
   dl.text('Number', 417, 48);
-  dl.text('First Letter of', 508, 40);
-  dl.text('Last Name', 516, 48);
+  dl.text('First Letter of', 506, 40);
+  dl.text('Last Name', 514, 48);
 
   const lastname = $('#lastname').val().capitalize();  // the side bar
   if (lastname.length > 0) {
@@ -807,7 +814,7 @@ function generateStandardDecklist(parsedInput) {
   }
 
   // put the event name, deck designer, and deck name into the PDF
-  dl.setFont('times');
+  dl.setFont('helvetica');
   dl.setFontSize(7);
   dl.setFontStyle('normal');
   dl.text('Date:', 169, 68);
@@ -815,62 +822,61 @@ function generateStandardDecklist(parsedInput) {
   dl.setFontSize(11);
   dl.text($('#eventdate').val(), 192, 69.5);
 
-  dl.setFont('times');
+  dl.setFont('helvetica');
   dl.setFontSize(7);
-  dl.text('Event:', 387, 68);
+  dl.text('Event:', 386, 68);
   dl.setFont('helvetica');
   dl.setFontSize(11);
   dl.text($('#event').val().capitalize(), 412, 69.5);
 
-  dl.setFont('times');
+  dl.setFont('helvetica');
   dl.setFontSize(7);
   dl.text('Location:', 158, 92);
   dl.setFont('helvetica');
   dl.setFontSize(11);
   dl.text($('#eventlocation').val().capitalize(), 192, 93.5);
 
-  dl.setFont('times');
+  dl.setFont('helvetica');
   dl.setFontSize(7);
-  dl.text('Deck Name:', 370, 92);
+  dl.text('Deck Name:', 367, 92);
   dl.setFont('helvetica');
   dl.setFontSize(11);
   dl.text($('#deckname').val().capitalize(), 412, 93.5);
 
-  dl.setFont('times');
+  dl.setFont('helvetica');
   dl.setFontSize(7);
-  dl.text('Deck Designer:', 362, 116);
+  dl.text('Deck Designer:', 359, 116);
   dl.setFont('helvetica');
   dl.setFontSize(11);
   dl.text($('#deckdesigner').val().capitalize(), 412, 117.5);
 
-  dl.setFont('times');
+  dl.setFont('helvetica');
   dl.setFontSize(13);
-  dl.setFontStyle('bold');
   dl.text('PRINT CLEARLY USING ENGLISH CARD NAMES', 36, 121);
 
   // put the last name into the PDF
-  dl.setFont('times');
+  dl.setFont('helvetica');
   dl.setFontSize(7);
   dl.setFontStyle('normal');
   dl.text('Last Name:', 41, 760, 90);
   dl.setFont('helvetica');
   dl.setFontSize(11);
   dl.setFontStyle('bold');
-  dl.text(lastname, 43, 724, 90);
+  dl.text(lastname, 43, 722, 90);
 
   // put the first name into the PDF
   const firstname = $('#firstname').val().capitalize();
-  dl.setFont('times');
+  dl.setFont('helvetica');
   dl.setFontSize(7);
   dl.setFontStyle('normal');
   dl.text('First Name:', 41, 581, 90);  // rotate
   dl.setFont('helvetica');
   dl.setFontSize(11);
   dl.setFontStyle('bold');
-  dl.text(firstname, 43, 544, 90);
+  dl.text(firstname, 43, 542, 90);
 
   // put the DCI number into the PDF
-  dl.setFont('times');
+  /*dl.setFont('helvetica');
   dl.setFontSize(7);
   dl.setFontStyle('italic');
   dl.text('DCI #:', 41, 404, 90);    // dci # is rotated and italic
@@ -885,52 +891,80 @@ function generateStandardDecklist(parsedInput) {
     for (let i = 0, y = 372; i < dcinumber.length; i++, y -= 24) {
       dl.text(dcinumber.charAt(i), 43, y, 90);
     }
-  }
+  }*/
 
   // Add the deck to the decklist
   for (let column = 0, x = 82, y = 182; column < 2; column++) {
-    dl.setFont('times');
-    dl.setFontStyle('bold');
+    dl.setFont('helvetica');
+    dl.setFontStyle('normal');
     if (column === 0) {
       dl.setFontSize(13);
       dl.text('Main Deck:', 62, 149);
       dl.setFontSize(11);
       dl.text('# in deck:', 62, 166);  // first row, main deck
+      dl.line(62, 167, 111, 167);
       dl.text('Card Name:', 122, 166);
+      dl.line(122, 167, 183, 167);
     } else {
       dl.setFontSize(13);
-      dl.text('Main Deck Continued:', 336, 149);
+      dl.text('Main Deck Continued & Basic Lands:', 336, 149);
       dl.setFontSize(11);
       dl.text('# in deck:', 336, 166); // second row, main deck
+      dl.line(336, 167, 386, 167);
       dl.text('Card Name:', 396, 166);
+      dl.line(396, 167, 457, 167);
     }
     dl.setFont('helvetica');
     dl.setFontSize(12);
     dl.setFontStyle('normal');
-    for (let j = 0, index = j + column * 32; j < 32 && index < 44 && index < maindeck.length; j++, index++, y += 18) {
-      let card = maindeck[index];
-      if (column === 1 && j === 0 && card['q'] === 0) {
-        // remove blank entry at top of second column
-        maindeck.splice(index, 1);
-        card = maindeck[index];
-      } else if (card['q'] === 0) {
-        // Ignore zero quantity entries (blank)
-        continue;
-      }
 
-      dl.text(card['q'].toString(), x, y);
-      dl.text(card['n'], x + 38, y);
+    const basicLands = ['Plains', 'Island', 'Swamp', 'Mountain', 'Forest',
+    'Snow-Covered Plains', 'Snow-Covered Island', 'Snow-Covered Swamp', 'Snow-Covered Mountain',
+    'Snow-Covered Forest', 'Wastes'];
+  
+    // separating basic land cards from maindeck
+    const basicLandsFromMaindeck = maindeck.filter(card => basicLands.includes(card['n']));
+    const nonBasicLands = maindeck.filter(card => !basicLands.includes(card['n']));
+    
+    let printDeck;
+    if (column === 0) {
+      printDeck = nonBasicLands;
+    } else {
+      printDeck = [...nonBasicLands.slice(32), ...basicLandsFromMaindeck];
     }
+    
+    for (let j = 0, index = j; j < 32 && index < 44 && index < printDeck.length; j++, index++, y += 18) {
+      let card = printDeck[index];
+      
+      if (card && card['q'] === 0) {
+        if (column === 1 && j === 0) {
+          // remove blank entry at top of second column
+          printDeck.splice(index, 1);
+          card = printDeck[index];
+        } else {
+          // Ignore zero quantity entries (blank)
+          continue;
+        }
+      }
+    
+      if (card) {
+        dl.text(card['q'].toString(), x, y);
+        dl.text(card['n'], x + 38, y);
+      }
+    }
+  
     x = 356, y = 182;
   }
 
-  dl.setFont('times');
+  dl.setFont('helvetica');
   dl.setFontSize(13);
-  dl.setFontStyle('bold');
+  dl.setFontStyle('normal');
   dl.text('Sideboard:', 336, 404);
   dl.setFontSize(11);
   dl.text('# in deck:', 336, 420); // second row, sideboard
+  dl.line(336, 421, 386, 421);
   dl.text('Card Name:', 396, 420);
+  dl.line(396, 421, 457, 421);
 
   // Add the sideboard to the decklist
   dl.setFont('helvetica');
@@ -942,9 +976,8 @@ function generateStandardDecklist(parsedInput) {
   }
 
   // Add the maindeck count
-  dl.setFont('times');
+  dl.setFont('helvetica');
   dl.setFontSize(11);
-  dl.setFontStyle('bold');
   dl.text('Total Number of Cards in Main Deck:', 62, 768);
   dl.setFont('helvetica');
   dl.setFontSize(20);
@@ -954,9 +987,8 @@ function generateStandardDecklist(parsedInput) {
   }
 
   // Add the sideboard count
-  dl.setFont('times');
+  dl.setFont('helvetica');
   dl.setFontSize(11);
-  dl.setFontStyle('bold');
   dl.text('Total Number of Cards in Sideboard:', 336, 714);
   dl.setFont('helvetica');
   dl.setFontSize(20);
@@ -965,9 +997,9 @@ function generateStandardDecklist(parsedInput) {
     dl.text(String(sideboard_count), 524 + 56 / 2, 712, null, null, 'center');
   }
 
-  dl.setFont('times');
+  dl.setFont('helvetica');
   dl.setFontSize(5);
-  dl.setFontStyle('bold');
+  dl.setFontStyle('normal');
   dl.text('FOR OFFICAL USE ONLY', 324, 730);
 
   dl.setFontSize(6);
@@ -982,6 +1014,9 @@ function generateStandardDecklist(parsedInput) {
   dl.text('Status:', 454, 754);
   dl.text('Judge:', 454, 766);
 
+  const currentYear = new Date().getFullYear();
+  dl.text(`TM & © ${currentYear} Wizards of the Coast LLC`, 475, 780); // wizards copyright
+  
   return dl;
 }
 
@@ -1035,7 +1070,7 @@ function validateInput(parsedLists) {
   const validate = {
     'firstname': [],
     'lastname': [],
-    'dcinumber': [],
+    //'dcinumber': [],
     'event': [],
     'eventdate': [],
     'eventlocation': [],
@@ -1066,14 +1101,14 @@ function validateInput(parsedLists) {
   else if ($('#lastname').val().length > maxLastNameLength) { validate.lastname.push({ error: 'toolarge' }); }
 
   // check DCI number (non-blank, numeric, < 11 digits, valid, has check digit, was changed)
-  if ($('#dcinumber').val() === '')                 { validate.dcinumber.push({ warning: 'blank' });  }
+  /*if ($('#dcinumber').val() === '')                 { validate.dcinumber.push({ warning: 'blank' });  }
   else if (!$('#dcinumber').val().match(/^[\d]+$/)) { validate.dcinumber.push({ error: 'nonnum' });   }
   else if ($('#dcinumber').val().length >= 11)      { validate.dcinumber.push({ error: 'toolarge' }); }
   else if (!DCI.isValid($('#dcinumber').val()))     { validate.dcinumber.push({ error: 'invalid' });  }
   else {
     if (DCI.isValid($('#dcinumber').val()) === -1)  { validate.dcinumber.push({ warning: 'nocheck' });}
     if (DCI.wasChanged($('#dcinumber').val()))      { validate.dcinumber.push({ warning: 'changed' });}
-  }
+  }*/
 
   // check event name (non-blank)
   if ($('#event').val() === '') { validate.event.push({ warning: 'blank' }); }
@@ -1214,7 +1249,7 @@ function statusAndTooltips(valid) {
         } else if (validationObject['error'] === 'toolarge') {
           notifications.push(prop, ['Last name too long', validType]);
         }
-      } else if (prop === 'dcinumber') {
+      /*} else if (prop === 'dcinumber') {
         if (validationObject['warning'] === 'blank') {
           notifications.push(prop, ['Missing DCI number', validType]);
         } else if (validationObject['error'] === 'nonnum') {
@@ -1227,7 +1262,7 @@ function statusAndTooltips(valid) {
           notifications.push(prop, ['We cannot verify that your DCI number is valid as it is in an old format. Please double-check it.', validType]);
         } else if (validationObject['warning'] === 'changed') {
           notifications.push(prop, ['Your DCI number was expanded to the newer 10 digit system', validType]);
-        }
+        }*/
       } else if (prop === 'event') {
         if (validationObject['warning'] === 'blank') {
           notifications.push(prop, ['Missing event name', validType]);
