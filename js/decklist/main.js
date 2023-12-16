@@ -141,6 +141,11 @@ function parseGET() {
   if ($._GET[ 'uploadURL' ] !== undefined) {
     $('#upload').css('display', 'inline-block');
   }
+
+  // process the decksort param, if present
+  if ($._GET['decksort'] !== undefined) {
+    $('#sort-' + $._GET['decksort']).click();
+  }
 }
 
 // Detect if there is PDF support for the autopreview
