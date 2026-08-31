@@ -18,6 +18,7 @@ Interested in directly linking to [decklist.org](https://www.decklist.org) for y
 - **`deckdesigner`**: designer of the deck (e.g. CubeApril)
 - **`deckmain`**: the deck itself; this can be in any format the website understands (use `%0A` for newlines)
 - **`deckside`**: the side itself; this can be in any format the website understands (use `%0A` for newlines)
+- **`decksort`**: change the order of the cards in the mainboard and sideboard (choices: `alphabetical`, `cmc`, `color`, `numeric`, `original`, `type`, defaults to `color`)
 - **`disableediting`**: prevent users from editing the fields above
 - **`logo`**: please contact [april@pokeinthe.io](mailto:april@pokeinthe.io), if you'd like to replace the DCI logo
 
