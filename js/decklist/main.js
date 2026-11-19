@@ -732,7 +732,6 @@ function generateStandardDecklist(parsedInput) {
   dl.rect(135, 78, 441, 24);  // location + deck name
   dl.rect(355, 54, 221, 72);  // event + deck name + deck designer
   dl.rect(552, 30, 24, 24);   // first letter
-  dl.rect(445, 30, 55, 24);   // table number
 
   dl.rect(27, 140, 24, 628);  // last name + first name + dci
   dl.rect(27, 140, 24, 270);  // dci
@@ -792,8 +791,6 @@ function generateStandardDecklist(parsedInput) {
 
   dl.setFontSize(7);
   dl.setFontStyle('normal');
-  dl.text('Table', 421, 40);
-  dl.text('Number', 417, 48);
   dl.text('First Letter of', 508, 40);
   dl.text('Last Name', 516, 48);
 
@@ -895,11 +892,12 @@ function generateStandardDecklist(parsedInput) {
       dl.setFontSize(13);
       dl.text('Main Deck:', 62, 149);
       dl.setFontSize(11);
+      dl.text('(Magic: 60 Minimum)', 140, 149);
       dl.text('# in deck:', 62, 166);  // first row, main deck
       dl.text('Card Name:', 122, 166);
     } else {
       dl.setFontSize(13);
-      dl.text('Main Deck Continued:', 336, 149);
+      dl.text('Main Deck Continued & Basic Lands:', 336, 149);
       dl.setFontSize(11);
       dl.text('# in deck:', 336, 166); // second row, main deck
       dl.text('Card Name:', 396, 166);
@@ -929,6 +927,7 @@ function generateStandardDecklist(parsedInput) {
   dl.setFontStyle('bold');
   dl.text('Sideboard:', 336, 404);
   dl.setFontSize(11);
+  dl.text('(Magic: up to 15)', 404, 404);
   dl.text('# in deck:', 336, 420); // second row, sideboard
   dl.text('Card Name:', 396, 420);
 
