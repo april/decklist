@@ -841,7 +841,7 @@ function generateStandardDecklist(parsedInput) {
   dl.text('Deck Designer:', 362, 116);
   dl.setFont('helvetica');
   dl.setFontSize(11);
-  dl.text($('#deckdesigner').val().capitalize(), 412, 117.5);
+  dl.text($('#deckdesigner').val(), 412, 117.5);
 
   dl.setFont('times');
   dl.setFontSize(13);
